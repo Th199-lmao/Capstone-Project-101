@@ -1,0 +1,1509 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Star Lifecycle</title>
+  <!-- Google Fonts: Quicksand -->
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    html,body{height:100%;margin:0}
+    canvas{display:block}
+    /* right info box */
+    #infoBox{position:fixed;right:12px;top:12px;width:360px;max-height:80vh;overflow:auto;background:rgba(0,0,0,0.6);color:#fff;padding:12px;border-radius:8px;font-family:'Quicksand', Arial, sans-serif;z-index:9998}
+    #infoBox h3{margin:0 0 6px 0;font-size:16px}
+    #infoScrollLabel{font-size:12px;color:#ffdca3;margin-left:8px;opacity:0.95}
+    .info-topic{margin-bottom:10px;padding:8px;border-radius:6px;background:rgba(255,255,255,0.02)}
+    .info-topic strong{display:block;margin-bottom:6px}
+    .info-topic.active{outline:2px solid rgba(255,220,120,0.18);background:linear-gradient(90deg, rgba(255,255,200,0.03), rgba(255,200,100,0.02))}
+    /* fade overlay at bottom to indicate more content */
+    #infoFade{position:absolute;right:12px;left:12px;bottom:12px;height:40px;pointer-events:none;background:linear-gradient(180deg, rgba(0,0,0,0), rgba(0,0,0,0.6));border-radius:6px}
+    /* small chevron hint */
+    #scrollHint{position:absolute;right:18px;bottom:18px;font-size:18px;color:#ffdca3;opacity:0;transition:opacity 300ms, transform 300ms;pointer-events:auto;cursor:pointer}
+    #scrollHint.pulse{opacity:1;transform:translateY(0)}
+    /* show native scrollbar thin on supporting browsers */
+    #infoBox::-webkit-scrollbar{width:8px}
+    #infoBox::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.12);border-radius:4px}
+  </style>
+    <style>
+      #hrDiagramBox {
+        position: fixed;
+        left: 18px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 340px;
+        height: 320px;
+        background: rgba(10,10,20,0.82);
+        border: 2px solid #444;
+        border-radius: 14px;
+        box-shadow: 0 4px 24px 0 rgba(0,0,0,0.18);
+        z-index: 9998;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-family: 'Quicksand', Arial, sans-serif;
+        font-size: 17px;
+        letter-spacing: 0.01em;
+        text-align: center;
+        pointer-events: none;
+        opacity: 0.97;
+      }
+      #hrDiagramBox .hr-label {
+        color: #ffdca3;
+        font-size: 19px;
+        font-weight: bold;
+        margin-bottom: 10px;
+      }
+      #hrDiagramBox .hr-placeholder {
+        color: #b3e0ff;
+        font-size: 15px;
+        margin-top: 8px;
+      }
+    </style>
+    <style>
+      #stageFactsBox {
+        position: fixed;
+        left: 12px;
+        bottom: 12px;
+        min-width: 260px;
+        max-width: 340px;
+        background: rgba(0,0,0,0.7);
+        color: #fff;
+        padding: 12px 16px 10px 16px;
+        border-radius: 8px;
+        font-family: 'Quicksand', Arial, sans-serif;
+        font-size: 14px;
+        z-index: 9999;
+        box-shadow: 0 2px 12px 0 rgba(0,0,0,0.18);
+        pointer-events: none;
+      }
+      #stageFactsBox strong { color: #ffdca3; font-size: 15px; }
+      #stageFactsBox .fact { margin-bottom: 4px; }
+      #stageFactsBox .fact-label { color: #b3e0ff; font-weight: bold; margin-right: 4px; }
+      #stageFactsBox .fact-value { color: #fff; }
+    </style>
+  <style>
+    /* feature prompt (top center) */
+    #featurePrompt{position:fixed;left:50%;top:12px;transform:translateX(-50%);background:rgba(0,0,0,0.65);color:#fff;padding:8px 12px;border-radius:8px;font-family:'Quicksand', Arial, sans-serif;z-index:10001;display:flex;gap:12px;align-items:center}
+    #featurePrompt label{font-size:13px;display:flex;gap:6px;align-items:center}
+    #featureToggle{position:fixed;left:50%;top:12px;transform:translateX(calc(-50% + 260px));z-index:10002;background:rgba(0,0,0,0.6);color:#fff;border:0;padding:6px 8px;border-radius:6px;cursor:pointer}
+    #supernovaFlash{position:fixed;left:0;top:0;right:0;bottom:0;background:#fff;opacity:0;pointer-events:none;transition:opacity 400ms;z-index:10003}
+  </style>
+</head>
+<body>
+  <div id="hrDiagramBox">
+    <img src="https://raw.githubusercontent.com/Th199-lmao/Capstone-Project-101/main/hr-diagram.png" alt="Hertzsprung-Russell Diagram" style="max-width:96%;max-height:82%;border-radius:10px;box-shadow:0 2px 12px #0007;display:block;margin:0 auto;" />
+    <div class="hr-label" style="margin-top:8px;">Hertzsprung–Russell Diagram</div>
+  </div>
+  <div id="stageFactsBox" style="display:none"></div>
+  <div id="ui" style="position:fixed;left:12px;top:12px;background:rgba(0,0,0,0.5);color:#fff;padding:10px;border-radius:6px;font-family:'Quicksand', Arial, sans-serif; z-index: 9999;">
+    <div style="margin-bottom:6px">Star Type:
+      <select id="starType">
+        <option value="average">Average Star</option>
+        <option value="massive">Massive Star</option>
+      </select>
+      <button id="createBtn">Restart</button>
+    </div>
+    <div style="margin-bottom:6px">
+      <button id="prevStage">◀ Prev Stage</button>
+      <button id="nextStage">Next Stage ▶</button>
+    </div>
+    <div style="margin-bottom:6px">
+      <label><input type="checkbox" id="insideToggle"> Go Inside</label>
+    </div>
+    <div>Stage: <span id="stageName">-</span></div>
+  </div>
+  <div id="featurePrompt">
+    <label><input type="checkbox" id="optSound"> Sound</label>
+    <label><input type="checkbox" id="optSurprise"> Surprise Events (comets)</label>
+    <button id="featureApply">Apply</button>
+  </div>
+  <button id="featureToggle" title="Toggle options">⚙</button>
+  <div id="supernovaFlash"></div>
+    <div id="infoBox">
+      <h3>Star Lifecycle <span id="infoScrollLabel">Scroll to read more</span></h3>
+      <div id="infoFade"></div>
+      <div id="scrollHint" title="Scroll for more">▼</div>
+      <div class="info-group">
+        <h4 style="margin:8px 0 6px 0;color:#ffdca3">Average Stars</h4>
+        <div class="info-topic" data-type="average" data-name="Nebula"><strong>Nebula</strong>
+          <div>A nebula is a huge cloud of gas and dust in space. It is the place where stars are born. Gravity slowly pulls the gas and dust together, making some areas denser than others. When enough material gathers, a new star begins to form.</div>
+        </div>
+        <div class="info-topic" data-type="average" data-name="Protostar"><strong>Protostar</strong>
+          <div>A protostar forms when gas and dust from a nebula collapse toward the center. As it shrinks, it becomes hotter and starts to spin. At this stage, it is not a real star yet because nuclear fusion has not started. The energy comes from gravity, not from fusion.</div>
+        </div>
+        <div class="info-topic" data-type="average" data-name="Main Sequence"><strong>Main Sequence Star</strong>
+          <div>A main sequence star forms when the core becomes hot enough for nuclear fusion to begin. Hydrogen changes into helium and releases energy. This energy balances gravity, keeping the star stable. Most stars, including the Sun, spend most of their life in this stage.</div>
+        </div>
+        <div class="info-topic" data-type="average" data-name="Red Giant"><strong>Red Giant</strong>
+          <div>When the hydrogen in the core runs out, the star can no longer stay stable. The core shrinks while the outer layers expand and cool. Average stars become red giants. The star becomes much larger and brighter.</div>
+        </div>
+        <div class="info-topic" data-type="average" data-name="Planetary Nebula"><strong>Planetary Nebula (Average Stars)</strong>
+          <div>In average stars, the red giant pushes its outer layers away into space. These glowing layers form a planetary nebula. The name is misleading because it has nothing to do with planets.</div>
+        </div>
+        <div class="info-topic" data-type="average" data-name="White Dwarf"><strong>White Dwarf (Average Stars)</strong>
+          <div>After the outer layers are lost, the remaining core becomes a white dwarf. It is very hot and dense but no longer produces energy. Over a long time, it slowly cools down.</div>
+        </div>
+      </div>
+      <div class="info-group">
+        <h4 style="margin:8px 0 6px 0;color:#ffb3b3">Massive Stars</h4>
+        <div class="info-topic" data-type="massive" data-name="Nebula"><strong>Nebula</strong>
+          <div>A nebula is a huge cloud of gas and dust in space. It is the place where stars are born. Gravity slowly pulls the gas and dust together, making some areas denser than others. When enough material gathers, a new star begins to form.</div>
+        </div>
+        <div class="info-topic" data-type="massive" data-name="Protostar"><strong>Protostar</strong>
+          <div>A protostar forms when gas and dust from a nebula collapse toward the center. As it shrinks, it becomes hotter and starts to spin. At this stage, it is not a real star yet because nuclear fusion has not started. The energy comes from gravity, not from fusion.</div>
+        </div>
+        <div class="info-topic" data-type="massive" data-name="Main Sequence"><strong>Main Sequence Star</strong>
+          <div>A main sequence star forms when the core becomes hot enough for nuclear fusion to begin. Hydrogen changes into helium and releases energy. This energy balances gravity, keeping the star stable. Most stars, including the Sun, spend most of their life in this stage.</div>
+        </div>
+        <div class="info-topic" data-type="massive" data-name="Red Supergiant"><strong>Red Giant / Red Supergiant</strong>
+          <div>When the hydrogen in the core runs out, the star can no longer stay stable. The core shrinks while the outer layers expand and cool. Massive stars become red supergiants. The star becomes much larger and brighter.</div>
+        </div>
+        <div class="info-topic" data-type="massive" data-name="Supernova"><strong>Supernova (Massive Stars)</strong>
+          <div>Massive stars end their life in a supernova. When fusion stops, the core collapses suddenly and causes a huge explosion. This explosion spreads elements into space that help form new stars and planets.</div>
+        </div>
+        <div class="info-topic" data-type="massive" data-name="Neutron Star / Black Hole"><strong>Neutron Star / Black Hole (Massive Stars)</strong>
+          <div>After a supernova, the core that remains depends on its mass. If it is very dense but smaller, it becomes a neutron star. If it is extremely massive, it collapses into a black hole, where gravity is so strong that nothing can escape.</div>
+        </div>
+      </div>
+    </div>
+    <div id="errorOverlay" style="position:fixed;left:12px;bottom:12px;background:rgba(255,10,10,0.95);color:#fff;padding:8px;border-radius:6px;font-family:'Quicksand', Arial, sans-serif;display:none;z-index:10000;max-width:320px;white-space:pre-wrap"></div>
+<script type="module">
+// --- Stage facts data ---
+const STAGE_FACTS = {
+  Nebula: [
+    { label: 'Temperature', value: '10–100 K' },
+    { label: 'Size', value: '100+ light-years' },
+    { label: 'Main material', value: 'Hydrogen gas' },
+  ],
+  Protostar: [
+    { label: 'Surface temperature', value: '~1,000–2,000 K' },
+    { label: 'Formation time', value: '1–10 million years' },
+    { label: 'Fusion', value: 'Not started' },
+  ],
+  'Main Sequence': [
+    { label: 'Core temperature', value: '~15 million K' },
+    { label: 'Surface temperature', value: '~5,500 K' },
+    { label: 'Lifetime', value: '~10 billion years (Sun-like)' },
+  ],
+  'Red Giant': [
+    { label: 'Radius', value: '~100× Sun' },
+    { label: 'Surface temperature', value: '3,000–4,500 K' },
+    { label: 'Brightness', value: '~1,000× Sun' },
+  ],
+  'Red Supergiant': [
+    { label: 'Radius', value: 'Up to 1,000× Sun' },
+    { label: 'Surface temperature', value: '~3,500 K' },
+    { label: 'Lifetime', value: 'A few million years' },
+  ],
+  'Planetary Nebula': [
+    { label: 'Gas temperature', value: '~10,000 K' },
+    { label: 'Lifetime', value: '10,000–50,000 years' },
+    { label: 'Expansion speed', value: '20–30 km/s' },
+  ],
+  'White Dwarf': [
+    { label: 'Size', value: 'About Earth-sized' },
+    { label: 'Surface temperature', value: 'Up to 100,000 K' },
+    { label: 'Mass', value: 'Similar to the Sun' },
+  ],
+  'Supernova': [
+    { label: 'Energy released', value: '~10⁴⁴ joules' },
+    { label: 'Temperature', value: 'Billions of K' },
+    { label: 'Duration', value: 'Weeks to months' },
+  ],
+  'Neutron Star / Black Hole': [
+    { label: 'Neutron Star', value: '' },
+    { label: 'Diameter', value: '~20 km' },
+    { label: 'Surface temperature', value: '~1,000,000 K' },
+    { label: 'Density', value: '1 tsp ≈ billions of tons' },
+    { label: 'Black Hole', value: '' },
+    { label: 'Escape speed', value: '> speed of light' },
+    { label: 'Size', value: 'Few km (stellar black hole)' },
+    { label: 'Density', value: 'Extremely high' },
+  ],
+};
+
+function updateStageFactsBox() {
+  const box = document.getElementById('stageFactsBox');
+  if (!box) return;
+  const curStage = STAR_TYPES[currentType].stages[stageIndex];
+  if (!curStage) { box.style.display = 'none'; return; }
+  // Map stage names to fact keys (precise match for Planetary Nebula)
+  let factKey = curStage.name;
+  if (factKey === 'Planetary Nebula') factKey = 'Planetary Nebula';
+  else if (factKey.includes('Main Sequence')) factKey = 'Main Sequence';
+  else if (factKey.includes('Red Giant') && !factKey.includes('Super')) factKey = 'Red Giant';
+  else if (factKey.includes('Red Supergiant')) factKey = 'Red Supergiant';
+  else if (factKey.includes('White Dwarf')) factKey = 'White Dwarf';
+  else if (factKey.includes('Supernova')) factKey = 'Supernova';
+  else if (factKey.includes('Neutron Star') || factKey.includes('Black Hole')) factKey = 'Neutron Star / Black Hole';
+  else if (factKey.includes('Protostar')) factKey = 'Protostar';
+  else if (factKey === 'Nebula') factKey = 'Nebula';
+  else { box.style.display = 'none'; return; }
+  const facts = STAGE_FACTS[factKey];
+  if (!facts) { box.style.display = 'none'; return; }
+  box.innerHTML = `<strong>${factKey}</strong><br>` + facts.map(f => f.label ? `<div class=\"fact\"><span class=\"fact-label\">${f.label}${f.value ? ':' : ''}</span> <span class=\"fact-value\">${f.value}</span></div>` : '').join('');
+  box.style.display = '';
+}
+import * as THREE from 'https://unpkg.com/three@0.155.0/build/three.module.js';
+
+function showError(err) {
+  console.error(err);
+  const el = document.getElementById('errorOverlay');
+  if (el) { el.style.display = 'block'; el.textContent = err && err.stack ? err.stack : String(err); }
+}
+
+window.onerror = function (msg, src, line, col, err) { showError(err || msg); };
+window.onunhandledrejection = function (e) { showError(e.reason || e); };
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(window.devicePixelRatio);
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
+
+// --- Configurable star types and lifecycle stages ---
+const STAR_TYPES = {
+  average: {
+    count: 5000,
+    radius: 5,
+    color: 0xffffaa,
+    stages: [
+      { name: 'Nebula', duration: 180, color: 0x99ccff },
+      { name: 'Protostar', duration: 120, color: 0xffddbb },
+      { name: 'Main Sequence', duration: 240, color: 0xffffaa },
+      { name: 'Red Giant', duration: 200, color: 0xff8844 },
+      { name: 'Planetary Nebula', duration: 80, color: 0xffccee },
+      { name: 'White Dwarf', duration: 100, color: 0x99ccff }
+    ]
+  },
+  massive: {
+    count: 8000,
+    radius: 7,
+    color: 0xffcc88,
+    stages: [
+      // make Nebula/Protostar/Main same durations as average for similar feel
+      { name: 'Nebula', duration: 180, color: 0x99ccff },
+      { name: 'Protostar', duration: 120, color: 0xffddbb },
+      { name: 'Main Sequence', duration: 240, color: 0xffffaa },
+      { name: 'Red Supergiant', duration: 260, color: 0xff4422 },
+      { name: 'Supernova', duration: 200, color: 0xffffff },
+      { name: 'Neutron Star / Black Hole', duration: 180, color: 0x222222 }
+    ]
+  }
+};
+
+let currentType = 'average';
+let stageIndex = 0;
+let stagePhase = 0; // progress within current stage [0 .. duration-1]
+
+// create a soft circular sprite for points (gives the "dot" look)
+function createPointTexture() {
+  const size = 128;
+  const canvas = document.createElement('canvas');
+  canvas.width = size; canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  const grad = ctx.createRadialGradient(size/2, size/2, 0, size/2, size/2, size/2);
+  grad.addColorStop(0, 'rgba(255,255,255,1)');
+  grad.addColorStop(0.2, 'rgba(255,255,255,0.9)');
+  grad.addColorStop(0.4, 'rgba(255,200,180,0.6)');
+  grad.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0,0,size,size);
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.needsUpdate = true;
+  return tex;
+}
+
+const pointSprite = createPointTexture();
+const material = new THREE.PointsMaterial({ size: 0.08, sizeAttenuation: true, vertexColors: true, map: pointSprite, blending: THREE.AdditiveBlending, transparent: true, depthWrite: false });
+let targetPointSize = 0.08;
+let star = null;
+let coreGroup = null;
+let diskGroup = null;
+
+function makeStar(typeKey) {
+  try {
+  const t = STAR_TYPES[typeKey];
+  const geometry = new THREE.BufferGeometry();
+  const positions = new Float32Array(t.count * 3);
+  const colors = new Float32Array(t.count * 3);
+  for (let i = 0; i < t.count; i++) {
+    const r = Math.cbrt(Math.random()) * t.radius;
+    const theta = Math.random() * Math.PI * 2;
+    const phi = Math.acos(2 * Math.random() - 1);
+    const x = r * Math.sin(phi) * Math.cos(theta);
+    const y = r * Math.sin(phi) * Math.sin(theta);
+    const z = r * Math.cos(phi);
+    positions[i * 3] = x;
+    positions[i * 3 + 1] = y;
+    positions[i * 3 + 2] = z;
+    // color gradient based on radius
+    const base = new THREE.Color(t.color);
+    const dark = new THREE.Color(0x0a0a1a);
+    const mix = r / t.radius;
+    const c = base.clone().lerp(dark, mix * 0.7);
+    colors[i * 3] = c.r;
+    colors[i * 3 + 1] = c.g;
+    colors[i * 3 + 2] = c.b;
+  }
+  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+  // keep a copy of base positions for non-destructive animations (swirl/drift)
+  geometry.userData = geometry.userData || {};
+  geometry.userData.basePositions = positions.slice();
+  geometry.userData.driftAccum = 0;
+  material.color = new THREE.Color(t.color);
+  if (star) scene.remove(star);
+  star = new THREE.Points(geometry, material);
+  star.scale.setScalar(1);
+  scene.add(star);
+  // remove previous core/disk
+  if (coreGroup) { scene.remove(coreGroup); coreGroup = null; }
+  if (diskGroup) { scene.remove(diskGroup); diskGroup = null; }
+  // create inner core group (sphere + atmosphere) for visual volume
+  coreGroup = new THREE.Group();
+  const innerGeo = new THREE.SphereGeometry(Math.max(0.5, t.radius * 0.4), 32, 24);
+  const innerMat = new THREE.MeshBasicMaterial({ color: t.color, side: THREE.BackSide, transparent: true, opacity: 0.95 });
+  const innerMesh = new THREE.Mesh(innerGeo, innerMat);
+  coreGroup.add(innerMesh);
+  const atmosphereGeo = new THREE.SphereGeometry(Math.max(0.6, t.radius * 0.6), 32, 24);
+  const atmosphereMat = new THREE.MeshBasicMaterial({ color: t.color, transparent: true, opacity: 0.35, blending: THREE.AdditiveBlending, depthWrite: false });
+  const atmosphereMesh = new THREE.Mesh(atmosphereGeo, atmosphereMat);
+  coreGroup.add(atmosphereMesh);
+  scene.add(coreGroup);
+  // prepare flare storage for solar flares (main sequence)
+  coreGroup.userData = coreGroup.userData || {};
+  coreGroup.userData.flares = [];
+  coreGroup.userData.lastFlareTime = 0;
+  stageIndex = 0;
+  stagePhase = 0;
+  updateStageName();
+  try { updateVisualsForStage(); } catch (err) { showError(err); }
+  } catch (err) { showError(err); }
+}
+
+function createAccretionDisk(radius) {
+  diskGroup = new THREE.Group();
+  // several concentric torus layers for colorful disk
+  const colors = [0xffaa33, 0xff6644, 0xffcc88, 0xffffaa];
+  for (let i = 0; i < 3; i++) {
+    const r = radius * (1.0 + i * 0.25);
+    const tube = Math.max(0.1, radius * 0.12 * (1 + i * 0.2));
+    const geo = new THREE.TorusGeometry(r, tube, 16, 128);
+    const mat = new THREE.MeshBasicMaterial({ color: colors[i % colors.length], transparent: true, opacity: 0.75 - i * 0.2, blending: THREE.AdditiveBlending });
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.rotation.x = Math.PI / 2.2;
+    diskGroup.add(mesh);
+  }
+  scene.add(diskGroup);
+}
+
+// create a large, soft nebula cloud around the star for the 'Nebula' stage
+function createNebulaCloud(radius, colorHex = 0x99ccff) {
+  if (!coreGroup) return null;
+  const count = 1500;
+  const pos = new Float32Array(count * 3);
+  for (let i = 0; i < count; i++) {
+    const r = radius * (1.2 + Math.random() * 3.0);
+    const theta = Math.random() * Math.PI * 2;
+    const phi = Math.acos(2 * Math.random() - 1);
+    pos[i*3] = Math.sin(phi) * Math.cos(theta) * r;
+    pos[i*3+1] = Math.sin(phi) * Math.sin(theta) * r;
+    pos[i*3+2] = Math.cos(phi) * r;
+  }
+  const geom = new THREE.BufferGeometry();
+  geom.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  const mat = new THREE.PointsMaterial({ size: 0.6, map: pointSprite, transparent: true, opacity: 0.35, color: colorHex, blending: THREE.AdditiveBlending, depthWrite: false });
+  const pts = new THREE.Points(geom, mat);
+  pts.userData = { rotationSpeed: 0.00012 + Math.random() * 0.0006 };
+  scene.add(pts);
+  return pts;
+}
+
+// create a thinner, brighter accretion disk for protostar/main stages
+function createProtostarDisk(radius, colorHex = 0xffddbb) {
+  const g = new THREE.Group();
+  for (let i = 0; i < 2; i++) {
+    const r = radius * (0.45 + i * 0.08);
+    const tube = Math.max(0.04, radius * 0.06 * (1 + i * 0.12));
+    const geo = new THREE.TorusGeometry(r, tube, 8, 128);
+    const mat = new THREE.MeshBasicMaterial({ color: colorHex, transparent: true, opacity: 0.6 - i * 0.15, blending: THREE.AdditiveBlending, depthWrite: false });
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.rotation.x = Math.PI / 2.4;
+    g.add(mesh);
+  }
+  return g;
+}
+
+// create multiple luminous particle swirls (rings) for protostar spin visual
+function createProtostarSwirls(radius, colorHex = 0xffe0cc, numSwirls = 4) {
+  const swirls = [];
+  for (let s = 0; s < numSwirls; s++) {
+    const count = 700 + Math.floor(Math.random() * 200);
+    const pos = new Float32Array(count * 3);
+    const swirlRadius = radius * (0.7 + 0.18 * s + (Math.random() - 0.5) * 0.04);
+    for (let i = 0; i < count; i++) {
+      const a = (i / count) * Math.PI * 2;
+      // each ring has a slightly different vertical tilt and thickness
+      const tilt = (Math.PI / 2) + (Math.random() - 0.5) * 0.22 + (s - (numSwirls-1)/2) * 0.13;
+      const r = swirlRadius * (1 + (Math.random() - 0.5) * 0.02);
+      pos[i*3] = Math.cos(a) * r;
+      pos[i*3+1] = Math.sin(a) * r * Math.sin(tilt);
+      pos[i*3+2] = Math.sin(a) * r * Math.cos(tilt);
+    }
+    const geom = new THREE.BufferGeometry();
+    geom.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    const mat = new THREE.PointsMaterial({ size: 0.15 + 0.03 * s, map: pointSprite, transparent: true, opacity: 0.85 - 0.13 * s, color: colorHex, blending: THREE.AdditiveBlending, depthWrite: false });
+    const pts = new THREE.Points(geom, mat);
+    pts.userData = {
+      rotSpeed: 0.012 + 0.008 * Math.random() + 0.004 * s,
+      tilt: tilt + (Math.random() - 0.5) * 0.1,
+      baseOpacity: mat.opacity
+    };
+    pts.rotation.x = tilt;
+    pts.scale.setScalar(1.5 + 0.18 * s);
+    swirls.push(pts);
+  }
+  return swirls;
+}
+
+// create a helical spiral of points around the core to emphasize spin
+function createProtostarSpiral(radius, colorHex = 0xffd4b8) {
+  const count = 1200;
+  const pos = new Float32Array(count * 3);
+  const turns = 3.0;
+  const height = radius * 0.6;
+  for (let i = 0; i < count; i++) {
+    const t = i / count;
+    const a = t * Math.PI * 2 * turns;
+    const r = radius * (0.5 + 0.25 * Math.sin(t * Math.PI * 2 * 4) );
+    pos[i*3] = Math.cos(a) * r;
+    pos[i*3+1] = (t - 0.5) * height;
+    pos[i*3+2] = Math.sin(a) * r;
+  }
+  const geom = new THREE.BufferGeometry();
+  geom.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  const mat = new THREE.PointsMaterial({ size: 0.10, map: pointSprite, transparent: true, opacity: 0.9, color: colorHex, blending: THREE.AdditiveBlending, depthWrite: false });
+  const pts = new THREE.Points(geom, mat);
+  pts.userData = { rotSpeed: 0.01 + (Math.random() - 0.5) * 0.004 };
+  pts.rotation.x = Math.PI / 2;
+  return pts;
+}
+
+// create a translucent expanding planetary nebula shell
+function createPlanetaryShell(radius, colorHex = 0xffccee) {
+  try {
+    const geo = new THREE.SphereGeometry(radius * 0.9, 32, 16);
+    const mat = new THREE.MeshBasicMaterial({ color: colorHex, transparent: true, opacity: 0.28, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
+    const shell = new THREE.Mesh(geo, mat);
+    shell.userData = { expanding: true, speed: 0.006 + Math.random() * 0.012 };
+    return shell;
+  } catch (e) { return null; }
+}
+
+// Spawn a short-lived solar flare particle burst attached to the coreGroup
+function spawnFlare() {
+  if (!coreGroup) return;
+  try {
+    const inner = coreGroup.children && coreGroup.children[0];
+    const innerRadius = (inner && inner.geometry && inner.geometry.parameters && inner.geometry.parameters.radius) ? inner.geometry.parameters.radius : 1.0;
+    const count = 36;
+    const pos = new Float32Array(count * 3);
+    const vels = new Array(count);
+    for (let i = 0; i < count; i++) {
+      // emit from surface with slight random cone
+      const theta = Math.random() * Math.PI * 2;
+      const phi = (Math.random() * 0.4) + (Math.PI * 0.25); // biased upward-ish
+      const r = innerRadius * (0.98 + Math.random() * 0.06);
+      const x = Math.sin(phi) * Math.cos(theta) * r;
+      const y = Math.sin(phi) * Math.sin(theta) * r;
+      const z = Math.cos(phi) * r;
+      pos[i*3] = x; pos[i*3+1] = y; pos[i*3+2] = z;
+      // velocity mainly radial outward
+      const speed = 0.06 + Math.random() * 0.08;
+      const nx = x / (Math.sqrt(x*x + y*y + z*z) + 1e-6);
+      const ny = y / (Math.sqrt(x*x + y*y + z*z) + 1e-6);
+      const nz = z / (Math.sqrt(x*x + y*y + z*z) + 1e-6);
+      vels[i] = [nx * speed * (0.8 + Math.random()*0.6), ny * speed * (0.8 + Math.random()*0.6), nz * speed * (0.8 + Math.random()*0.6)];
+    }
+    const geom = new THREE.BufferGeometry();
+    geom.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    const mat = new THREE.PointsMaterial({ size: 0.12, map: pointSprite, transparent: true, opacity: 0.95, color: 0xffee99, blending: THREE.AdditiveBlending, depthWrite: false });
+    const pts = new THREE.Points(geom, mat);
+    pts.userData = { vels, life: 90, maxLife: 90 };
+    coreGroup.add(pts);
+    coreGroup.userData.flares.push(pts);
+    coreGroup.userData.lastFlareTime = Date.now();
+    // collectibles removed: no orb spawn
+  } catch (e) { console.warn('spawnFlare failed', e); }
+}
+
+function updateVisualsForStage() {
+  const curStage = STAR_TYPES[currentType].stages[stageIndex];
+  // cleanup any stage-specific helper visuals (nebula, protostar disk, planetary shell)
+  try {
+    if (coreGroup && coreGroup.userData) {
+      if (coreGroup.userData.nebulaCloud) {
+        scene.remove(coreGroup.userData.nebulaCloud);
+        try { coreGroup.userData.nebulaCloud.geometry.dispose(); coreGroup.userData.nebulaCloud.material.dispose(); } catch(e){}
+        coreGroup.userData.nebulaCloud = null;
+      }
+      if (coreGroup.userData.protostarDisk) {
+        coreGroup.remove(coreGroup.userData.protostarDisk);
+        try { coreGroup.userData.protostarDisk.children.forEach(c => { if (c.geometry) c.geometry.dispose(); if (c.material) c.material.dispose(); }); } catch(e){}
+        coreGroup.userData.protostarDisk = null;
+      }
+      // remove any protostar swirls array
+      if (coreGroup.userData.protostarSwirls && Array.isArray(coreGroup.userData.protostarSwirls)) {
+        coreGroup.userData.protostarSwirls.forEach(s => { try { coreGroup.remove(s); if (s.geometry) s.geometry.dispose(); if (s.material) s.material.dispose(); } catch(e){} });
+        coreGroup.userData.protostarSwirls = null;
+      }
+      // remove single legacy swirl if present
+      if (coreGroup.userData.protostarSwirls) {
+        try {
+          coreGroup.userData.protostarSwirls.forEach(sw => {
+            coreGroup.remove(sw);
+            if (sw.geometry) sw.geometry.dispose();
+            if (sw.material) sw.material.dispose();
+          });
+        } catch(e){}
+        coreGroup.userData.protostarSwirls = null;
+      }
+      // remove spiral
+      if (coreGroup.userData.protostarSpiral) {
+        try { coreGroup.remove(coreGroup.userData.protostarSpiral); if (coreGroup.userData.protostarSpiral.geometry) coreGroup.userData.protostarSpiral.geometry.dispose(); if (coreGroup.userData.protostarSpiral.material) coreGroup.userData.protostarSpiral.material.dispose(); } catch(e){}
+        coreGroup.userData.protostarSpiral = null;
+      }
+      if (coreGroup.userData.planetaryShell) {
+        scene.remove(coreGroup.userData.planetaryShell);
+        try { coreGroup.userData.planetaryShell.geometry.dispose(); coreGroup.userData.planetaryShell.material.dispose(); } catch(e){}
+        coreGroup.userData.planetaryShell = null;
+      }
+    }
+  } catch(e) { /* ignore cleanup errors */ }
+  // default: show points and core; hide disk
+  if (star) star.visible = true;
+  if (coreGroup) coreGroup.visible = true;
+  if (diskGroup) diskGroup.visible = false;
+  // change vertex colors and core mats
+  updateVertexColors(curStage.color);
+  if (coreGroup) {
+    coreGroup.children.forEach((m) => {
+      if (m.material) {
+        // for red stages, bias toward richer red and give thicker atmosphere
+        if (curStage.name.toLowerCase().includes('red')) {
+              // stronger red + larger atmosphere for supergiant
+              if (curStage.name.toLowerCase().includes('super')) {
+                const superRed = new THREE.Color(0xff3311);
+                m.material.color.set(superRed);
+                if (m === coreGroup.children[0]) {
+                  m.material.opacity = 0.995; // inner sphere more opaque
+                  m.scale.setScalar(1.25);
+                } else {
+                  m.material.opacity = 0.75;
+                  m.scale.setScalar(1.5);
+                }
+              } else {
+                const redColor = new THREE.Color(0xff4444);
+                m.material.color.set(redColor);
+                m.material.opacity = (m === coreGroup.children[0]) ? 0.98 : 0.55;
+                // ensure default scales for normal red giant
+                if (m.scale) m.scale.setScalar(1);
+              }
+            } else {
+          m.material.color.set(curStage.color);
+          // make protostar/main feel more glowing and slightly larger atmosphere
+          if (curStage.name.toLowerCase().includes('protostar') || curStage.name.toLowerCase().includes('main')) {
+            m.material.opacity = (m === coreGroup.children[0]) ? 0.98 : 0.55;
+          } else {
+            m.material.opacity = (m === coreGroup.children[0]) ? 0.95 : 0.35;
+          }
+        }
+        m.material.needsUpdate = true;
+      }
+    });
+  }
+  // Stage-specific helper visuals
+  const stageNameLower = curStage.name.toLowerCase();
+  try {
+    // Nebula: big diffuse cloud, softer points
+    if (stageNameLower.includes('nebula')) {
+      if (!coreGroup.userData.nebulaCloud) {
+        const neb = createNebulaCloud(STAR_TYPES[currentType].radius * 1.6, curStage.color);
+        coreGroup.userData.nebulaCloud = neb;
+      }
+      if (coreGroup.userData.nebulaCloud) coreGroup.userData.nebulaCloud.visible = true;
+      if (star) { material.opacity = 0.48; targetPointSize = 0.22; }
+      // make the inner core dimmer in a nebula
+      if (coreGroup && coreGroup.children[0]) { coreGroup.children[0].material.opacity = 0.6; }
+    } else {
+      // Always hide nebula cloud if it exists in non-nebula stages
+      if (coreGroup && coreGroup.userData && coreGroup.userData.nebulaCloud) {
+        coreGroup.userData.nebulaCloud.visible = false;
+      }
+    }
+    // Protostar: no disk; apply a moderate spin to the core/star for visual motion
+    if (stageNameLower.includes('protostar')) {
+      // ensure any old protostar disk is removed (cleanup above handles disposal)
+      if (coreGroup && coreGroup.userData) coreGroup.userData.spinSpeed = 0.012 + (Math.random() - 0.5) * 0.004;
+      // add a luminous swirl ring to accentuate spin
+      if (coreGroup && coreGroup.userData && !coreGroup.userData.protostarSwirl) {
+        const swirl = createProtostarSwirl(STAR_TYPES[currentType].radius, 0xfff0dd);
+        if (swirl) {
+          swirl.position.copy(coreGroup.position || new THREE.Vector3());
+          coreGroup.add(swirl);
+          coreGroup.userData.protostarSwirl = swirl;
+        }
+      }
+      // Always (re)create and attach multiple swirls for protostar
+      if (coreGroup && coreGroup.userData) {
+        // Remove any old swirls
+        if (coreGroup.userData.protostarSwirls && Array.isArray(coreGroup.userData.protostarSwirls)) {
+          coreGroup.userData.protostarSwirls.forEach(s => { try { coreGroup.remove(s); if (s.geometry) s.geometry.dispose(); if (s.material) s.material.dispose(); } catch(e){} });
+        }
+        // Create new swirls
+        const swirls = createProtostarSwirls(STAR_TYPES[currentType].radius, 0xfff0dd, 4);
+        coreGroup.userData.protostarSwirls = swirls;
+        swirls.forEach(sw => { sw.visible = true; sw.material.opacity = 1.0; sw.material.color.set(0xfff0dd); coreGroup.add(sw); });
+      }
+      // Core spin speed
+      if (coreGroup && coreGroup.userData) coreGroup.userData.spinSpeed = 0.018 + (Math.random() - 0.5) * 0.006;
+      if (star) { material.opacity = 0.95; targetPointSize = 0.18; }
+    }
+    // Planetary Nebula: show an expanding translucent shell and reduce outer particles
+    if (stageNameLower.includes('planetary')) {
+      if (!coreGroup.userData.planetaryShell) {
+        const shell = createPlanetaryShell(STAR_TYPES[currentType].radius * 1.6, curStage.color);
+        if (shell) {
+          shell.position.copy(coreGroup.position || new THREE.Vector3());
+          scene.add(shell);
+          coreGroup.userData.planetaryShell = shell;
+        }
+      }
+      if (coreGroup.userData.planetaryShell) coreGroup.userData.planetaryShell.visible = true;
+      if (star) { material.opacity = 0.25; targetPointSize = 0.08; }
+      if (coreGroup && coreGroup.children[0]) { coreGroup.children[0].material.opacity = 0.9; }
+    } else {
+      // Always hide planetary nebula shell if it exists in non-planetary stages
+      if (coreGroup && coreGroup.userData && coreGroup.userData.planetaryShell) {
+        coreGroup.userData.planetaryShell.visible = false;
+      }
+    }
+    // White Dwarf: shrink to small, bright core
+    if (stageNameLower.includes('white dwarf')) {
+      if (star) { star.visible = true; material.opacity = 1.0; targetPointSize = 0.06; }
+      if (coreGroup && coreGroup.children[0]) {
+        coreGroup.children[0].material.color.set(0xffffff);
+        coreGroup.children[0].material.opacity = 1.0;
+        coreGroup.children[0].scale.setScalar(0.45);
+      }
+    }
+  } catch (e) { /* ignore helper visual errors */ }
+  // special handling for final massive remnant (show both black hole and neutron star)
+  const stages = STAR_TYPES[currentType].stages;
+  // cleanup previous neutron mesh if any
+  if (coreGroup && coreGroup.userData && coreGroup.userData.neutronMesh) {
+    coreGroup.remove(coreGroup.userData.neutronMesh);
+    coreGroup.userData.neutronMesh.geometry.dispose();
+    coreGroup.userData.neutronMesh.material.dispose();
+    coreGroup.userData.neutronMesh = null;
+  }
+  if (currentType === 'massive' && stageIndex === stages.length - 1) {
+    // black hole: hide point cloud, dark inner sphere, show accretion disk
+    if (star) star.visible = false;
+    if (coreGroup) coreGroup.visible = true;
+    // make inner sphere black with slight glow on inner rim
+    const inner = coreGroup.children[0];
+    inner.material.color.set(0x000000);
+    inner.material.opacity = 1.0;
+    inner.material.needsUpdate = true;
+    // add disk if missing
+    if (!diskGroup) createAccretionDisk(STAR_TYPES[currentType].radius * 1.2);
+    diskGroup.visible = true;
+    // add a bright neutron-star-like object near the disk so both are visible
+    const neutronGeo = new THREE.SphereGeometry(0.6, 16, 12);
+    const neutronMat = new THREE.MeshBasicMaterial({ color: 0x66ccff, emissive: 0x66ccff });
+    const neutronMesh = new THREE.Mesh(neutronGeo, neutronMat);
+    coreGroup.add(neutronMesh);
+    coreGroup.userData.neutronMesh = neutronMesh;
+    // add a subtle particle halo around the neutron star for glow
+    const haloCount = 300;
+    const haloPos = new Float32Array(haloCount * 3);
+    const nsRadius = 0.6;
+    for (let i = 0; i < haloCount; i++) {
+      const u = Math.random();
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.acos(2 * Math.random() - 1);
+      const r = nsRadius * (1.05 + Math.random() * 0.6);
+      haloPos[i*3] = Math.sin(phi) * Math.cos(theta) * r;
+      haloPos[i*3+1] = Math.sin(phi) * Math.sin(theta) * r;
+      haloPos[i*3+2] = Math.cos(phi) * r;
+    }
+    const haloGeom = new THREE.BufferGeometry();
+    haloGeom.setAttribute('position', new THREE.BufferAttribute(haloPos, 3));
+    const haloMat = new THREE.PointsMaterial({ size: 0.06, map: pointSprite, transparent: true, opacity: 0.85, color: 0x66ccff, blending: THREE.AdditiveBlending, depthWrite: false });
+    const haloPoints = new THREE.Points(haloGeom, haloMat);
+    neutronMesh.add(haloPoints);
+    coreGroup.userData.neutronHalo = haloPoints;
+    // compute separation and scale so BH inner and NS look same size and sit side-by-side
+    const sep = STAR_TYPES[currentType].radius * 2.2;
+    const innerRadius = (inner.geometry && inner.geometry.parameters && inner.geometry.parameters.radius) ? inner.geometry.parameters.radius : (STAR_TYPES[currentType].radius * 0.4);
+    inner.position.set(-sep / 2, 0, 0);
+    if (diskGroup) diskGroup.position.set(-sep / 2, 0, 0);
+    neutronMesh.position.set(sep / 2, 0, 0);
+    const nsBaseRadius = 0.6;
+    const scaleFactor = innerRadius / nsBaseRadius;
+    neutronMesh.scale.setScalar(scaleFactor);
+    // color disk with more intense, varied palette
+    if (diskGroup) diskGroup.children.forEach((m, i) => { m.material.color.set([0xff9944,0xff44aa,0xffee66][i%3]); m.material.opacity = 0.9 - i*0.15; });
+    // add a glowing rim to the black hole inner sphere for visual flair (smaller ring)
+    if (!coreGroup.userData.bhRim) {
+      try {
+        const rimRadius = innerRadius * 0.89; // smaller than before
+        const rimTube = Math.max(0.04, innerRadius * 0.06);
+        const rimGeo = new THREE.TorusGeometry(rimRadius, rimTube, 8, 128);
+        const rimMat = new THREE.MeshBasicMaterial({ color: 0xffcc66, transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending, depthWrite: false });
+        const rim = new THREE.Mesh(rimGeo, rimMat);
+        rim.rotation.x = Math.PI / 2;
+        rim.position.set(0, 0, 0);
+        inner.add(rim);
+        coreGroup.userData.bhRim = rim;
+      } catch (e) { /* ignore if geometry not available */ }
+    }
+  }
+  else {
+    // not in remnant stage: hide remnant UI (if any), hide disk and reset positions
+    const remEl2 = document.getElementById('remnantControls'); if (remEl2) remEl2.style.display = 'none';
+    if (diskGroup) { diskGroup.visible = false; diskGroup.position.set(0,0,0); }
+    if (coreGroup && coreGroup.children[0]) coreGroup.children[0].position.set(0,0,0);
+  }
+
+    // highlight the matching info topic in the right-hand box (if present)
+    try {
+    const cur = STAR_TYPES[currentType].stages[stageIndex];
+    // show only topics for the active star type and highlight the active stage
+    document.querySelectorAll('#infoBox .info-topic').forEach((el) => {
+      const nm = (el.dataset && el.dataset.name) ? el.dataset.name.toLowerCase() : (el.textContent || '').slice(0,20).toLowerCase();
+      const dtype = el.dataset && el.dataset.type ? el.dataset.type : 'average';
+      if (dtype === currentType) {
+        el.style.display = '';
+        if (cur && cur.name && nm === cur.name.toLowerCase()) el.classList.add('active'); else el.classList.remove('active');
+      } else {
+        el.style.display = 'none';
+        el.classList.remove('active');
+      }
+    });
+    // hide or show the whole group header depending on whether it contains topics for currentType
+    document.querySelectorAll('#infoBox .info-group').forEach((group) => {
+      const has = group.querySelectorAll(`.info-topic[data-type="${currentType}"]`).length > 0;
+      group.style.display = has ? '' : 'none';
+    });
+
+    // auto-scroll the active topic into view unless the user recently scrolled manually
+    try {
+      const container = document.getElementById('infoBox');
+      const activeEl = container ? container.querySelector('.info-topic.active') : null;
+      const now = Date.now();
+      const lastManual = window.infoBoxLastManualScroll || 0;
+      if (activeEl && container && (now - lastManual) > 1200) {
+        const cRect = container.getBoundingClientRect();
+        const aRect = activeEl.getBoundingClientRect();
+        if (aRect.top < cRect.top + 8 || aRect.bottom > cRect.bottom - 8) {
+          activeEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }
+    } catch (e) { /* ignore scroll errors */ }
+  } catch (e) { /* ignore if UI not present */ }
+}
+
+function updateVertexColors(hexColor) {
+  if (!star) return;
+  const geom = star.geometry;
+  const pos = geom.getAttribute('position');
+  let colAttr = geom.getAttribute('color');
+  if (!colAttr) {
+    colAttr = new THREE.BufferAttribute(new Float32Array(pos.count * 3), 3);
+    geom.setAttribute('color', colAttr);
+  }
+  const base = new THREE.Color(hexColor);
+  const dark = new THREE.Color(0x0a0a1a);
+  for (let i = 0; i < pos.count; i++) {
+    const x = pos.getX(i), y = pos.getY(i), z = pos.getZ(i);
+    const r = Math.sqrt(x * x + y * y + z * z);
+    const mix = Math.min(1, r / (STAR_TYPES[currentType].radius));
+    const c = base.clone().lerp(dark, mix * 0.7);
+    colAttr.setXYZ(i, c.r, c.g, c.b);
+  }
+  colAttr.needsUpdate = true;
+}
+
+// spawn a simple comet that flies across the scene with a fading trail
+function spawnComet() {
+  try {
+    const sizeBase = (0.28 + Math.random()*0.32);
+    const g = new THREE.SphereGeometry(sizeBase, 12, 10);
+    const m = new THREE.MeshBasicMaterial({ color: 0xaaddff, transparent: true, opacity: 0.95, blending: THREE.AdditiveBlending });
+    const comet = new THREE.Mesh(g, m);
+    // start off to one side
+    const side = Math.random() < 0.5 ? -1 : 1;
+    comet.position.set(side * 40, (Math.random()-0.5) * 18, -10 + Math.random() * 30);
+    comet.userData = { life: 800, vel: new THREE.Vector3(-side * (0.18 + Math.random()*0.28), (Math.random()-0.5)*0.08, -0.04) };
+    // create a small trail point that will follow the comet and fade
+    const trailGeo = new THREE.BufferGeometry();
+    const trailPos = new Float32Array(3);
+    trailGeo.setAttribute('position', new THREE.BufferAttribute(trailPos, 3));
+    const trail = new THREE.Points(trailGeo, new THREE.PointsMaterial({ size: (0.5 + Math.random()*0.6), color: 0xaaddff, transparent: true, opacity: 0.95, blending: THREE.AdditiveBlending, depthWrite: false }));
+    trail.userData = { age: 0 };
+    comet.userData.trail = trail;
+    scene.add(trail);
+    scene.add(comet);
+    window.sceneExtras = window.sceneExtras || { comets: [], fireworks: [] };
+    window.sceneExtras.comets.push(comet);
+  } catch (e) { console.warn('spawnComet failed', e); }
+}
+
+// supernova fireworks: bright particle burst + sound
+function triggerSupernovaFireworks(scale = 1.0) {
+  try {
+    if (!coreGroup) return;
+    // scale controls intensity: count, velocity multiplier, particle size, shock radius
+    const baseCount = 200;
+    const count = Math.max(60, Math.round(baseCount * scale));
+    const pos = new Float32Array(count * 3);
+    const vels = new Array(count);
+    for (let i = 0; i < count; i++) {
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.acos(2 * Math.random() - 1);
+      const r = 0.6 + Math.random() * (1.6 * scale);
+      const x = Math.sin(phi) * Math.cos(theta) * r;
+      const y = Math.sin(phi) * Math.sin(theta) * r;
+      const z = Math.cos(phi) * r;
+      pos[i*3] = x; pos[i*3+1] = y; pos[i*3+2] = z;
+      const velBase = 0.06 + Math.random() * 0.12;
+      vels[i] = [x * (velBase * scale), y * (velBase * scale), z * (velBase * scale)];
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    const mat = new THREE.PointsMaterial({ size: Math.min(1.2, 0.18 * scale + Math.random()*0.16), map: pointSprite, transparent: true, opacity: 1.0, color: 0xffffff, blending: THREE.AdditiveBlending, depthWrite: false });
+    const pts = new THREE.Points(geo, mat);
+    pts.userData = { vels, life: Math.max(120, Math.round(180 * scale)), maxLife: Math.max(120, Math.round(180 * scale)) };
+    // position around core
+    pts.position.copy(coreGroup.position || new THREE.Vector3());
+    scene.add(pts);
+    window.sceneExtras = window.sceneExtras || { comets: [], fireworks: [] };
+    window.sceneExtras.fireworks.push(pts);
+    // sound intensity scaled
+    if (enableSound) {
+      try { audioMaster.gain.value = Math.min(1.6, (audioMaster.gain.value || 0.18) * (1.6 * scale)); } catch(e){}
+      playSupernovaSFX();
+      setTimeout(() => { try { if (audioMaster) audioMaster.gain.value = 0.18; } catch(e){} }, 1200 * Math.min(2.0, scale));
+    }
+    // strong screen flash and camera shake
+    screenFlash(Math.min(1.0, 0.45 * scale), 400 + Math.round(300 * (scale - 1)));
+    cameraShakeTime = Math.max(cameraShakeTime, Math.round(40 * scale));
+    cameraShakeIntensity = Math.max(cameraShakeIntensity, 0.6 * scale);
+    // add a shockwave sphere scaled
+    try {
+      const shockGeo = new THREE.SphereGeometry(0.6 * scale, 32, 16);
+      const shockMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false });
+      const shock = new THREE.Mesh(shockGeo, shockMat);
+      shock.position.copy(coreGroup.position || new THREE.Vector3());
+      shock.userData = { life: Math.max(40, Math.round(60 * scale)) };
+      scene.add(shock);
+      window.sceneExtras.fireworks.push(shock);
+    } catch (e) { }
+  } catch (e) { console.warn('fireworks failed', e); }
+}
+
+// camera default
+camera.position.set(0, 0, 12);
+let inside = false;
+let mouse = { x: 0, y: 0 };
+let targetRot = { x: 0, y: 0 };
+// feature flags and game state
+let enableSound = false;
+let enableCollect = false; // deprecated, kept false
+let enableSurprise = false;
+// surpriseScale removed; crash uses fixed scale
+const CRASH_SCALE = 3.0;
+const raycaster = new THREE.Raycaster();
+const pointer = new THREE.Vector2();
+// audio helpers (initialized on user gesture)
+let audioCtx = null, audioMaster = null, ambientNode = null;
+// camera shake state
+let cameraShakeTime = 0;
+let cameraShakeIntensity = 0;
+let cameraShakeOffset = { x: 0, y: 0 };
+function initAudio() {
+  if (audioCtx) return;
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  audioMaster = audioCtx.createGain();
+  audioMaster.gain.value = 0.18;
+  audioMaster.connect(audioCtx.destination);
+}
+function playFlareSFX() {
+  if (!audioCtx || !enableSound) return;
+  const o = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  o.type = 'triangle'; o.frequency.setValueAtTime(800, audioCtx.currentTime);
+  o.frequency.exponentialRampToValueAtTime(240, audioCtx.currentTime + 0.12);
+  g.gain.setValueAtTime(0.001, audioCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.12, audioCtx.currentTime + 0.02);
+  g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.18);
+  o.connect(g); g.connect(audioMaster);
+  o.start(); o.stop(audioCtx.currentTime + 0.22);
+}
+function playSupernovaSFX() {
+  if (!audioCtx || !enableSound) return;
+  const b = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  b.type = 'sine'; b.frequency.setValueAtTime(80, audioCtx.currentTime);
+  g.gain.setValueAtTime(0.001, audioCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.9, audioCtx.currentTime + 0.08);
+  g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 1.2);
+  b.connect(g); g.connect(audioMaster);
+  b.start(); b.stop(audioCtx.currentTime + 1.3);
+}
+function startAmbient() {
+  if (!audioCtx || !enableSound) return;
+  if (ambientNode) return;
+  ambientNode = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  ambientNode.type = 'sine'; ambientNode.frequency.value = 60;
+  g.gain.value = 0.012;
+  ambientNode.connect(g); g.connect(audioMaster);
+  ambientNode.start();
+}
+function stopAmbient() { if (ambientNode) { ambientNode.stop(); ambientNode.disconnect(); ambientNode = null; } }
+
+// score UI removed; keep stub
+function updateScoreDisplay() {}
+
+function screenFlash(intensity = 0.9, duration = 300) {
+  const el = document.getElementById('supernovaFlash');
+  if (!el) return;
+  el.style.transition = 'none';
+  el.style.opacity = '' + intensity;
+  setTimeout(() => { el.style.transition = `opacity ${duration}ms`; el.style.opacity = '0'; }, 20);
+}
+
+window.addEventListener('mousemove', (e) => {
+  mouse.x = (e.clientX / window.innerWidth) * 2 - 1; // -1 .. 1
+  mouse.y = -(e.clientY / window.innerHeight) * 2 + 1; // -1 .. 1
+  targetRot.y = mouse.x * 0.9; // yaw
+  targetRot.x = mouse.y * 0.5; // pitch
+});
+
+function updateStageName() {
+  const nameEl = document.getElementById('stageName');
+  const curStage = STAR_TYPES[currentType].stages[stageIndex];
+  nameEl.textContent = curStage ? curStage.name : '-';
+  updateStageFactsBox();
+}
+
+function nextStage() {
+  const stages = STAR_TYPES[currentType].stages;
+  stageIndex = Math.min(stageIndex + 1, stages.length - 1);
+  stagePhase = 0;
+  material.color.set(stages[stageIndex].color);
+  updateVertexColors(stages[stageIndex].color);
+  updateVisualsForStage();
+  updateStageName();
+  updateStageFactsBox();
+}
+
+function prevStage() {
+  stageIndex = Math.max(stageIndex - 1, 0);
+  stagePhase = 0;
+  material.color.set(STAR_TYPES[currentType].stages[stageIndex].color);
+  updateVertexColors(STAR_TYPES[currentType].stages[stageIndex].color);
+  updateVisualsForStage();
+  updateStageName();
+  updateStageFactsBox();
+}
+
+// init default star
+makeStar(currentType);
+updateStageFactsBox();
+
+// UI wiring
+document.getElementById('starType').addEventListener('change', (e) => { currentType = e.target.value; makeStar(currentType); });
+document.getElementById('createBtn').addEventListener('click', () => {
+  // Reset to first stage of current star type, do not recreate star
+  stageIndex = 0;
+  stagePhase = 0;
+  const t = STAR_TYPES[currentType];
+  material.color.set(t.stages[0].color);
+  updateVertexColors(t.stages[0].color);
+  updateVisualsForStage();
+  updateStageName();
+  updateStageFactsBox();
+  updateFunFactBox && updateFunFactBox();
+});
+document.getElementById('nextStage').addEventListener('click', nextStage);
+document.getElementById('prevStage').addEventListener('click', prevStage);
+document.getElementById('insideToggle').addEventListener('change', (e) => { inside = e.target.checked; });
+// feature prompt apply button
+document.getElementById('featureApply').addEventListener('click', () => {
+  enableSound = !!document.getElementById('optSound').checked;
+  enableSurprise = !!document.getElementById('optSurprise').checked;
+  // no size slider; Apply simply reads checkboxes
+  // initialize audio on user gesture
+  if (enableSound) {
+    try { initAudio(); startAmbient(); } catch (e) { console.warn('audio init failed', e); }
+  } else { stopAmbient(); }
+  // hide the prompt
+  const p = document.getElementById('featurePrompt'); if (p) p.style.display = 'none';
+});
+// feature toggle button (open/close the prompt)
+document.getElementById('featureToggle').addEventListener('click', () => {
+  const p = document.getElementById('featurePrompt'); if (!p) return; p.style.display = (p.style.display === 'none' || getComputedStyle(p).display === 'none') ? '' : 'none';
+});
+// no surprise size slider
+
+// keyboard navigation
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight') nextStage();
+  if (e.key === 'ArrowLeft') prevStage();
+  if (e.key === 'i') { // toggle inside with 'i'
+    inside = !inside;
+    document.getElementById('insideToggle').checked = inside;
+  }
+});
+
+// click canvas to toggle inside
+renderer.domElement.addEventListener('click', (ev) => {
+  // toggle inside view
+  inside = !inside;
+  document.getElementById('insideToggle').checked = inside;
+});
+
+// show a scroll hint when the info box has overflow; hide after user scrolls or clicks the hint
+  function setupInfoBoxScrollHint() {
+  const box = document.getElementById('infoBox');
+  const hint = document.getElementById('scrollHint');
+  const fade = document.getElementById('infoFade');
+  const label = document.getElementById('infoScrollLabel');
+  if (!box || !hint || !fade || !label) return;
+  // track user's last manual scroll time to avoid interrupting them
+  window.infoBoxLastManualScroll = 0;
+  function update() {
+    const overflow = box.scrollHeight > box.clientHeight + 4;
+    if (overflow) {
+      hint.classList.add('pulse');
+      fade.style.display = '';
+      label.style.display = '';
+    } else {
+      hint.classList.remove('pulse');
+      fade.style.display = 'none';
+      label.style.display = 'none';
+    }
+  }
+  // hide hint/label when user interacts
+  function hideHint() { hint.classList.remove('pulse'); label.style.display = 'none'; window.infoBoxLastManualScroll = Date.now(); }
+  box.addEventListener('scroll', hideHint, { passive: true });
+  hint.addEventListener('click', () => { box.scrollBy({ top: box.clientHeight * 0.6, behavior: 'smooth' }); hint.classList.remove('pulse'); label.style.display = 'none'; window.infoBoxLastManualScroll = Date.now(); });
+  window.addEventListener('resize', update);
+  // initial check and a short delayed pulse to draw attention
+  update();
+  setTimeout(() => { update(); }, 350);
+}
+
+// animation loop respecting stages and inside view
+function animate() {
+  requestAnimationFrame(animate);
+  const stagesArr = STAR_TYPES[currentType].stages;
+  // clear any previous error overlay
+  const errEl = document.getElementById('errorOverlay');
+  if (errEl) { errEl.style.display = 'none'; errEl.textContent = ''; }
+  try {
+  const currentStage = stagesArr[stageIndex];
+
+  // No automatic stage progression — stages advance only via buttons/keys.
+  // Determine a target scale for the current stage and smoothly lerp towards it.
+  function getStageTargetScale() {
+    const r = STAR_TYPES[currentType].radius;
+    // If massive and in early stages, use average mapping to match visuals
+    const useAverageEarly = (currentType === 'massive' && stageIndex <= 2);
+    const effectiveRadius = useAverageEarly ? STAR_TYPES['average'].radius : r;
+    switch (stageIndex) {
+      case 0: return 1; // protostar
+      case 1: return 0.3; // main sequence (compact)
+      case 2: return 0.3 + (effectiveRadius / 2); // red giant / supergiant
+      case 3: return (effectiveRadius / 2) * 1.8; // supernova (pulse)
+      default: return Math.max(0.2, effectiveRadius / 2 * 0.5); // remnant
+    }
+  }
+
+  const targetScale = getStageTargetScale();
+  // determine lerp speed and outward particle drift for red stages
+  const stageName = currentStage.name.toLowerCase();
+  let lerpSpeed = 0.08;
+  let outwardSpeed = 0;
+    if (stageName.includes('red')) {
+    // red giant / red supergiant: slower expansion and gentle outward particle motion
+    if (stageName.includes('super')) {
+      lerpSpeed = 0.02; // very slow for supergiant
+      outwardSpeed = 0.0025; // stronger outward motion for supergiant
+    } else {
+      lerpSpeed = 0.035; // slower for red giant
+      outwardSpeed = 0.0009; // mild outward motion for red giant
+    }
+  }
+  // supernova should be much slower visually (gentle pulse and slow lerp)
+  let pulseFreq = 0.006 * Math.PI * 2;
+  let pulseAmp = 0.5;
+  if (stageName.includes('supernova')) {
+    lerpSpeed = 0.01; // very slow approach to supernova scale
+    pulseFreq = 0.0015 * Math.PI * 2; // slower pulse
+    pulseAmp = 0.25; // smaller amplitude
+    outwardSpeed = 0.0002; // mild outward motion during explosion
+  }
+
+  // smooth lerp to target scale
+  const currentScale = star.scale.x;
+  let newScale = currentScale + (targetScale - currentScale) * lerpSpeed;
+
+  // stage-specific tweaks (rotation, pulse)
+    if (stageName.includes('protostar') || stageName.includes('main sequence')) {
+      const isProtostar = stageName.includes('protostar');
+      // explicit spinSpeed for protostar, default for main sequence
+      const spinSpeed = (isProtostar && coreGroup && coreGroup.userData && coreGroup.userData.spinSpeed) ? coreGroup.userData.spinSpeed : (isProtostar ? 0.018 : 0.004);
+      star.rotation.y += spinSpeed;
+      if (isProtostar && coreGroup) {
+        coreGroup.rotation.y += spinSpeed * 0.9;
+        // spin the core mesh itself
+        if (coreGroup.children && coreGroup.children[0]) {
+          coreGroup.children[0].rotation.y += spinSpeed * 1.2;
+        }
+      }
+      // make a prettier breathing effect for protostar/main
+      newScale = 0.3 + 0.06 * Math.sin(Date.now() * 0.0009);
+      // slightly larger dots for protostar, moderate for main sequence
+      targetPointSize = isProtostar ? 0.18 : 0.14;
+    } else if (stageName.includes('supernova')) {
+    const pulse = 1 + Math.sin(Date.now() * pulseFreq) * pulseAmp;
+    newScale = targetScale * pulse;
+  }
+
+  // compute particle positions from basePositions and apply non-destructive effects
+  if (star && star.geometry && star.geometry.attributes.position) {
+    const geom = star.geometry;
+    const posAttr = geom.attributes.position;
+    const base = geom.userData.basePositions;
+    if (base) {
+      // protostar/main: swirl particles around Y axis for prettier shape
+      if (stageName.includes('protostar') || stageName.includes('main sequence')) {
+        const time = Date.now() * 0.0006;
+        for (let i = 0; i < posAttr.count; i++) {
+          const bx = base[i * 3];
+          const by = base[i * 3 + 1];
+          const bz = base[i * 3 + 2];
+          const angle = 0.0025 * Math.sin(time + i * 0.0005);
+          const ca = Math.cos(angle);
+          const sa = Math.sin(angle);
+          // rotate around Y
+          const x = bx * ca - bz * sa;
+          const z = bx * sa + bz * ca;
+          posAttr.setXYZ(i, x, by, z);
+        }
+        posAttr.needsUpdate = true;
+      } else {
+        // for red stages and others, apply radial drift based on accumulated driftAccum
+        if (outwardSpeed > 0) geom.userData.driftAccum = (geom.userData.driftAccum || 0) + outwardSpeed;
+        const drift = geom.userData.driftAccum || 0;
+        for (let i = 0; i < posAttr.count; i++) {
+          const bx = base[i * 3];
+          const by = base[i * 3 + 1];
+          const bz = base[i * 3 + 2];
+          const d = Math.sqrt(bx * bx + by * by + bz * bz) || 1e-6;
+          const scale = 1 + drift * (d / (STAR_TYPES[currentType].radius));
+          posAttr.setXYZ(i, bx * scale, by * scale, bz * scale);
+        }
+        posAttr.needsUpdate = true;
+      }
+    }
+  }
+
+  // smooth rotation towards mouse target
+  star.rotation.x += (targetRot.x - star.rotation.x) * 0.06;
+  star.rotation.y += (targetRot.y - star.rotation.y) * 0.06;
+
+  star.scale.setScalar(newScale);
+
+  // smooth transition of point sprite size
+  material.size += (targetPointSize - material.size) * 0.08;
+  // gradually return to default for other stages
+  if (!stageName.includes('protostar') && !stageName.includes('main sequence')) targetPointSize += (0.08 - targetPointSize) * 0.04;
+
+  // camera lerp for inside view and stage-specific zoom
+  let defaultZ = 12;
+  const sName = currentStage.name.toLowerCase();
+  if (sName.includes('supernova')) defaultZ = 25; // zoom out for explosion
+  if (sName.includes('supergiant')) defaultZ = 18; // slightly farther for supergiant
+  // final massive remnant should zoom out more to show both BH and NS
+  const stages = STAR_TYPES[currentType].stages;
+  if (currentType === 'massive' && stageIndex === stages.length - 1) defaultZ = 45;
+  const targetZ = inside ? 0.8 : defaultZ;
+  camera.position.z += (targetZ - camera.position.z) * 0.08;
+
+  // animate accretion disk if present
+  if (diskGroup) {
+    diskGroup.children.forEach((m, i) => {
+      m.rotation.z += 0.01 + i * 0.005;
+    });
+  }
+
+  // rotate any nebula cloud and animate planetary shell if present
+  try {
+    if (coreGroup && coreGroup.userData && coreGroup.userData.nebulaCloud) {
+      const neb = coreGroup.userData.nebulaCloud;
+      neb.rotation.y += (neb.userData.rotationSpeed || 0.0003);
+    }
+    if (coreGroup && coreGroup.userData && coreGroup.userData.planetaryShell) {
+      const shell = coreGroup.userData.planetaryShell;
+      // expand and fade slowly
+      shell.scale.x += shell.userData.speed; shell.scale.y += shell.userData.speed; shell.scale.z += shell.userData.speed;
+      shell.material.opacity = Math.max(0, shell.material.opacity - 0.0008);
+      if (shell.material.opacity <= 0.02) {
+        try { scene.remove(shell); shell.geometry.dispose(); shell.material.dispose(); } catch(e){}
+        coreGroup.userData.planetaryShell = null;
+      }
+    }
+    // animate protostar swirl ring rotation if present
+    // Animate all protostar swirls if present
+    if (coreGroup && coreGroup.userData && coreGroup.userData.protostarSwirls) {
+      const t = Date.now();
+      coreGroup.userData.protostarSwirls.forEach((s, i) => {
+        const rs = (s.userData && s.userData.rotSpeed) ? s.userData.rotSpeed : 0.018;
+        // rotate around local Y and Z for dynamic look
+        s.rotation.z += rs * (0.8 + 0.2 * i);
+        s.rotation.y += rs * (0.5 + 0.15 * i);
+        // subtle pulsate and occasional bright flicker
+        s.material.opacity = (s.userData.baseOpacity || 0.8) + 0.13 * Math.sin(t * 0.0017 + i) + (Math.random() < 0.0015 ? 0.13 : 0);
+        // slowly wobble scale for liveliness
+        const wob = 1 + 0.018 * Math.sin(t * 0.0011 + i);
+        s.scale.setScalar((1.5 + 0.18 * i) * wob);
+      });
+    }
+  } catch (e) { /* ignore nebula/planetary errors */ }
+
+  // neutron/star positions are static in remnant stage (no orbit). keep halo animation subtle
+  try {
+    const remHalo = coreGroup && coreGroup.userData && coreGroup.userData.neutronHalo ? coreGroup.userData.neutronHalo : null;
+    if (remHalo) {
+      remHalo.rotation.y += 0.002;
+    }
+    const bhRim = coreGroup && coreGroup.userData && coreGroup.userData.bhRim ? coreGroup.userData.bhRim : null;
+    if (bhRim) {
+      bhRim.rotation.z += 0.008;
+      // subtle pulsing of rim opacity
+      bhRim.material.opacity = 0.6 + 0.35 * (0.5 + 0.5 * Math.sin(Date.now() * 0.001));
+    }
+  } catch (e) { /* ignore if not ready */ }
+
+  // spawn occasional solar flares during Main Sequence
+  try {
+    const sName = currentStage && currentStage.name ? currentStage.name.toLowerCase() : '';
+    if (sName.includes('main')) {
+      const now = Date.now();
+      if (coreGroup && coreGroup.userData) {
+        const last = coreGroup.userData.lastFlareTime || 0;
+        const since = now - last;
+        // occasionally trigger a flare (randomized interval)
+        if (since > 1200 && Math.random() < 0.01 + Math.min(0.04, since / 8000)) {
+          spawnFlare();
+        }
+      }
+    }
+  } catch (e) { /* ignore */ }
+
+  // update existing flares (move outward, fade, and remove when expired)
+  try {
+    if (coreGroup && coreGroup.userData && coreGroup.userData.flares && coreGroup.userData.flares.length) {
+      const toRemove = [];
+      for (let fi = 0; fi < coreGroup.userData.flares.length; fi++) {
+        const p = coreGroup.userData.flares[fi];
+        if (!p || !p.geometry || !p.userData) continue;
+        const attr = p.geometry.getAttribute('position');
+        const vels = p.userData.vels;
+        p.userData.life -= 1;
+        const lifeRatio = Math.max(0, p.userData.life / p.userData.maxLife);
+        p.material.opacity = 0.85 * lifeRatio;
+        p.material.size = 0.12 * (0.6 + 0.8 * lifeRatio);
+        for (let i = 0; i < attr.count; i++) {
+          const ix = i * 3;
+          let x = attr.array[ix];
+          let y = attr.array[ix+1];
+          let z = attr.array[ix+2];
+          const v = vels[i];
+          x += v[0]; y += v[1]; z += v[2];
+          attr.array[ix] = x; attr.array[ix+1] = y; attr.array[ix+2] = z;
+        }
+        attr.needsUpdate = true;
+        // collectibles removed: skip
+        if (p.userData.life <= 0) {
+          toRemove.push(fi);
+        }
+      }
+      // remove expired (from back to front)
+      for (let j = toRemove.length - 1; j >= 0; j--) {
+        const idx = toRemove[j];
+        const obj = coreGroup.userData.flares.splice(idx, 1)[0];
+        if (obj) {
+          coreGroup.remove(obj);
+          if (obj.geometry) obj.geometry.dispose();
+          if (obj.material) obj.material.dispose();
+        }
+      }
+    }
+  } catch (e) { /* ignore */ }
+
+  // surprise events: comets and random fireworks
+  try {
+    window.sceneExtras = window.sceneExtras || { comets: [], fireworks: [] };
+    // spawn comets occasionally
+      if (enableSurprise && Math.random() < 0.0009) {
+        spawnComet();
+      }
+    // update comets
+    for (let i = window.sceneExtras.comets.length - 1; i >= 0; i--) {
+      const c = window.sceneExtras.comets[i];
+      c.userData.life -= 1;
+      c.position.add(c.userData.vel);
+      if (c.userData.trail) {
+        c.userData.trail.userData.age = (c.userData.trail.userData.age || 0) + 1;
+        // update trail position to follow comet
+        try {
+          const tp = c.userData.trail.geometry.getAttribute('position');
+          tp.array[0] = c.position.x; tp.array[1] = c.position.y; tp.array[2] = c.position.z;
+          tp.needsUpdate = true;
+        } catch (e) {}
+        c.userData.trail.material.opacity = Math.max(0, 0.9 - c.userData.trail.userData.age * 0.01);
+      }
+      // if comet passes near the core, trigger a visual burst
+      try {
+        if (coreGroup && c.position.distanceTo(coreGroup.position || new THREE.Vector3()) < 6.0) {
+          if (enableSurprise) {
+            // crash: force a large-scale supernova effect
+            triggerSupernovaFireworks(CRASH_SCALE);
+            screenFlash(0.95, 700);
+            cameraShakeTime = 120; cameraShakeIntensity = 1.6;
+            // remove or heavily damage the core visuals: pulse and fade
+            try {
+              if (coreGroup.children && coreGroup.children[0]) {
+                const coreInner = coreGroup.children[0];
+                coreInner.material.opacity = 0.0;
+                coreInner.material.needsUpdate = true;
+              }
+              if (star) star.visible = false;
+            } catch (e) {}
+          }
+          c.userData.life = Math.min(c.userData.life, 6);
+        }
+      } catch (e) {}
+      if (c.userData.life <= 0) {
+        if (c.userData.trail) { scene.remove(c.userData.trail); if (c.userData.trail.geometry) c.userData.trail.geometry.dispose(); if (c.userData.trail.material) c.userData.trail.material.dispose(); }
+        scene.remove(c);
+        if (c.geometry) c.geometry.dispose();
+        if (c.material) c.material.dispose();
+        window.sceneExtras.comets.splice(i, 1);
+      }
+    }
+    // update fireworks and shock objects
+    if (window.sceneExtras.fireworks && window.sceneExtras.fireworks.length) {
+      for (let fi = window.sceneExtras.fireworks.length - 1; fi >= 0; fi--) {
+        const obj = window.sceneExtras.fireworks[fi];
+        if (!obj) { window.sceneExtras.fireworks.splice(fi,1); continue; }
+        // particle bursts
+        if (obj.type === 'Points' || obj.isPoints) {
+          try {
+            const attr = obj.geometry.getAttribute('position');
+            const vels = obj.userData && obj.userData.vels ? obj.userData.vels : null;
+            if (vels) {
+              for (let k = 0; k < attr.count; k++) {
+                const ix = k*3;
+                attr.array[ix] += vels[k][0]; attr.array[ix+1] += vels[k][1]; attr.array[ix+2] += vels[k][2];
+              }
+              attr.needsUpdate = true;
+            }
+            obj.userData.life -= 1;
+            obj.material.opacity = Math.max(0, obj.userData.life / (obj.userData.maxLife || 180));
+            if (obj.userData.life <= 0) {
+              scene.remove(obj);
+              if (obj.geometry) obj.geometry.dispose();
+              if (obj.material) obj.material.dispose();
+              window.sceneExtras.fireworks.splice(fi,1);
+            }
+          } catch (e) { }
+        } else {
+          // shock spheres and other meshes
+          try {
+            obj.userData = obj.userData || {};
+            obj.userData.life = (obj.userData.life || 0) - 1;
+            const life = obj.userData.life;
+            if (life > 0) {
+              const t = 1 - life / 60;
+              obj.scale.setScalar(1 + t * 8);
+              obj.material.opacity = Math.max(0, 0.9 * (1 - t));
+            } else {
+              scene.remove(obj);
+              if (obj.geometry) obj.geometry.dispose();
+              if (obj.material) obj.material.dispose();
+              window.sceneExtras.fireworks.splice(fi,1);
+            }
+          } catch (e) {}
+        }
+      }
+    }
+    // occasional surprise supernova fireworks when in supernova stage
+    const sName = currentStage && currentStage.name ? currentStage.name.toLowerCase() : '';
+    if (enableSurprise && sName.includes('supernova') && Math.random() < 0.006) {
+      triggerSupernovaFireworks();
+    }
+  } catch (e) { /* ignore */ }
+
+    // apply camera shake if active
+    let shakeX = 0, shakeY = 0;
+    if (cameraShakeTime > 0) {
+      const decay = cameraShakeTime / 60;
+      const intensity = cameraShakeIntensity * decay;
+      shakeX = (Math.random() - 0.5) * intensity * 1.6;
+      shakeY = (Math.random() - 0.5) * intensity * 0.9;
+      camera.position.x += shakeX;
+      camera.position.y += shakeY;
+      cameraShakeTime = Math.max(0, cameraShakeTime - 1);
+    }
+    renderer.render(scene, camera);
+    // remove applied shake offsets
+    if (shakeX !== 0 || shakeY !== 0) {
+      camera.position.x -= shakeX;
+      camera.position.y -= shakeY;
+    }
+  } catch (err) {
+    console.error('Animation error', err);
+    const el = document.getElementById('errorOverlay');
+    if (el) { el.style.display = 'block'; el.textContent = err && err.stack ? err.stack : String(err); }
+    // stop further updates to avoid spamming
+    return;
+  }
+}
+
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+updateScoreDisplay();
+animate();
+// setup scroll hint for info box
+setupInfoBoxScrollHint();
+
+</script>
+</body>
+</html>
