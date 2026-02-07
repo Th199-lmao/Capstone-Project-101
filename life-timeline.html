@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stars, Galaxies, the Universe</title>
+    <style>
+        /* --- COSMIC THEME CSS --- */
+        :root {
+            --bg-color: #0b0d17;
+            --text-color: #e0e6ed;
+            --accent-color: #3e64ff;
+            --card-bg: #1c1f2e;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            line-height: 1.6;
+        }
+
+        /* Navigation: vertical right-side bar (desktop) */
+        nav {
+            position: fixed;
+            right: 24px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background: rgba(11, 13, 23, 0.6);
+            padding: 10px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.04);
+            z-index: 1000;
+            box-shadow: 0 14px 40px rgba(0,0,0,0.45);
+            align-items: stretch;
+            min-width: 64px;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            display: block;
+            padding: 8px 12px;
+            font-weight: 600;
+            text-transform: none;
+            font-size: 0.95rem;
+            border-radius: 8px;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        nav a:hover, nav a.active {
+            color: var(--accent-color);
+            background: rgba(255,255,255,0.03);
+            transform: translateX(-4px);
+        }
+
+        /* Responsive: on narrow screens keep nav at top, full width */
+        @media (max-width: 900px) {
+            nav {
+                position: sticky;
+                top: 0;
+                right: auto;
+                transform: none;
+                flex-direction: row;
+                justify-content: center;
+                gap: 12px;
+                width: 100%;
+                border-radius: 0;
+                padding: 10px 8px;
+            }
+            nav a { padding: 8px 10px; }
+        }
+
+        /* Hero Section */
+        header {
+            position: relative;
+            overflow: hidden;
+            background: radial-gradient(circle at center, rgba(27,39,53,0.9) 0%, rgba(9,10,15,0.95) 100%), url('https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?auto=format&fit=crop&w=1600&q=80') center/cover no-repeat;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 20px;
+            text-align: center;
+            color: #fff;
+        }
+
+        /* lower black cover behind the title (replaces earth image) */
+        header::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 45%;
+            background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.95) 100%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* ensure header content sits above the dark cover */
+        header > * { position: relative; z-index: 3; }
+
+        h1 {
+            font-size: 3.5rem;
+            margin-bottom: 10px;
+            color: #fff;
+            text-shadow: 0 0 10px var(--accent-color);
+        }
+
+        .quote {
+            font-style: italic;
+            color: #aab;
+            max-width: 800px;
+            margin: 20px auto;
+            border-left: 3px solid var(--accent-color);
+            padding-left: 15px;
+        }
+
+        /* Main Layout */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        /* Enable full-page sections with scroll snapping */
+        html, body { height: 100%; }
+        body {
+            scroll-snap-type: y mandatory;
+            scroll-behavior: smooth;
+        }
+
+        /* each section is a viewport-sized snap area; the visual card inside
+           remains its normal size and is centered vertically */
+        section {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 12px;
+            scroll-snap-align: start;
+            box-sizing: border-box;
+            background: transparent;
+        }
+
+        /* normal boxes sized to their content (centered within each section) */
+        .card {
+            width: 100%;
+            max-width: 1000px;
+            background: var(--card-bg);
+            padding: 28px 22px;
+            border-radius: 12px;
+            box-shadow: 0 4px 18px rgba(0,0,0,0.35);
+            transition: box-shadow 0.25s ease, transform 0.22s ease;
+        }
+
+        .card:hover { box-shadow: 0 10px 30px rgba(0,0,0,0.45); }
+
+        .card.card-large {
+            max-width: 1200px;
+            padding: 20px;
+        }
+
+        h2 {
+            color: var(--accent-color);
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+        }
+
+        h3 {
+            color: #fff;
+            margin-top: 25px;
+        }
+
+        /* Lists & Specific formatting */
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        
+        li {
+            background: rgba(255,255,255,0.05);
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .highlight {
+            color: #ffdd57;
+            font-weight: bold;
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px;
+            font-size: 0.8rem;
+            color: #666;
+            border-top: 1px solid #333;
+        }
+        /* iframe embed styling for lifecycle module */
+        .embed-iframe { width: 100%; height: 85vh; max-height: 1200px; border: none; border-radius: 10px; box-shadow: 0 12px 50px rgba(0,0,0,0.5); }
+
+        @media (max-width: 900px) {
+            .embed-iframe { height: 60vh; max-height: 700px; }
+        }
+
+        /* Comet pass overlay (background) */
+        .comet-layer { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: visible; }
+        .comet {
+            position: absolute;
+            width: 360px;
+            height: 4px;
+            background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.95) 40%, rgba(255,255,255,0) 100%);
+            filter: blur(6px) contrast(120%);
+            transform: rotate(-18deg) translateX(-120%);
+            will-change: transform, opacity;
+            mix-blend-mode: screen;
+            opacity: 0.0;
+        }
+        .comet::after {
+            content: '';
+            position: absolute;
+            right: -8px;
+            top: -6px;
+            width: 18px;
+            height: 18px;
+            background: radial-gradient(circle, #fff 0%, rgba(255,255,255,0.5) 40%, rgba(255,255,255,0) 70%);
+            filter: blur(1px);
+            border-radius: 50%;
+        }
+
+        @keyframes comet-pass {
+            0% { transform: rotate(-18deg) translateX(-140%); opacity: 0; }
+            6% { opacity: 1; }
+            50% { transform: rotate(-18deg) translateX(60%); opacity: 1; }
+            100% { transform: rotate(-18deg) translateX(160%); opacity: 0; }
+        }
+
+        .comet.c1 { top: 12vh; left: -10%; width: 420px; animation: comet-pass 3.6s ease-in-out 0.4s infinite; }
+        .comet.c2 { top: 38vh; left: -18%; width: 520px; animation: comet-pass 5.2s cubic-bezier(.2,.8,.2,1) 2s infinite; filter: blur(8px) saturate(120%); }
+        .comet.c3 { top: 66vh; left: -5%; width: 360px; animation: comet-pass 4.2s linear 1.6s infinite; filter: blur(4px); }
+
+        /* subtle glow on headings to react to comets */
+        header h1, h2 { transition: text-shadow 0.4s ease; }
+
+        /* ensure content stacks above the comet background */
+        header, .container, footer { position: relative; z-index: 10; }
+        .comet-glow { text-shadow: 0 0 18px rgba(255,220,200,0.12), 0 0 36px rgba(62,100,255,0.06); }
+        /* model thumbnail removed (no image on right of title) */
+
+        .model-modal { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; z-index: 2000; background: linear-gradient(180deg, rgba(2,4,8,0.6), rgba(2,4,8,0.85)); }
+        .model-modal.open { display: flex; }
+        .model-modal-inner { width: min(1100px, 92vw); height: min(740px, 86vh); background: rgba(8,10,18,0.95); border-radius: 12px; box-shadow: 0 30px 80px rgba(0,0,0,0.7); position: relative; padding: 18px; }
+        model-viewer { width: 100%; height: 100%; border-radius: 8px; background: transparent; }
+        .model-close { position: absolute; right: 12px; top: 10px; color: #fff; background: transparent; border: none; font-size: 28px; cursor: pointer; }
+    </style>
+    <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+<body>
+
+    <div class="comet-layer" aria-hidden="true">
+        <span class="comet c1"></span>
+        <span class="comet c2"></span>
+        <span class="comet c3"></span>
+    </div>
+
+    <nav>
+        <a href="#home">Home</a>
+        <a href="#intro">Introduction</a>
+        <a href="#stars">Stars</a>
+        <a href="#lifecycle">Life Cycle</a>
+        <a href="#galaxies">Galaxies</a>
+        <a href="#cosmology">Cosmology</a>
+    </nav>
+
+    <header id="home">
+        <h1>Stars, Galaxies, the Universe</h1>
+        <p>A Journey Through Time and Space</p>
+        
+
+    <!-- 3D model modal -->
+    <div id="modelModal" class="model-modal" role="dialog" aria-hidden="true">
+        <div class="model-modal-inner">
+            <button class="model-close" aria-label="Close model">&times;</button>
+            <model-viewer id="mv" src="https://modelviewer.dev/shared-assets/models/Astronaut.glb" alt="3D astronaut" ar ios-src="" auto-rotate camera-controls exposure="1"></model-viewer>
+        </div>
+    </div>
+
+    <script>
+        (function(){
+            const thumb = document.getElementById('modelThumb');
+            const modal = document.getElementById('modelModal');
+            const closeBtn = document.querySelector('.model-close');
+            if(!thumb || !modal) return;
+            thumb.addEventListener('click', ()=>{ modal.classList.add('open'); modal.setAttribute('aria-hidden','false'); document.body.style.overflow = 'hidden'; });
+            closeBtn.addEventListener('click', ()=>{ modal.classList.remove('open'); modal.setAttribute('aria-hidden','true'); document.body.style.overflow = ''; });
+            modal.addEventListener('click', (e)=>{ if(e.target === modal) { modal.classList.remove('open'); modal.setAttribute('aria-hidden','true'); document.body.style.overflow = ''; } });
+        })();
+    </script>
+        <div class="quote">
+            "The cosmos is within us. We are made of star-stuff. We are a way for the cosmos to know itself." <br>
+            <strong>- Carl Sagan</strong>
+        </div>
+        
+    </header>
+
+    <div class="container">
+
+        <section id="intro">
+            <div class="card">
+            <h2>Introduction</h2>
+            <p>Welcome to an interactive exploration of the universe. This project is a comprehensive study of cosmic evolution, tracing the history of matter from the microscopic nuclear reactions deep within a star's core to the unfathomable expansion of the entire fabric of space-time.</p>
+            <p>The universe is not a static vacuum; it is a dynamic, evolving system. By decoding the light of distant stars, mapping the rotation of massive galaxies, and measuring the echoes of the Big Bang, scientists have reconstructed a narrative that began roughly 14 billion years ago.</p>
+            <p><em>Step into the shoes of a modern cosmologist to discover how we study objects trillions of miles away.</em></p>
+            </div>
+        </section>
+
+        <section id="stars">
+            <div class="card">
+            <h2>The Science of Stellar Classification</h2>
+            <p>Stars are massive, luminous balls of plasma, primarily composed of Hydrogen and Helium. Astronomers classify them using two primary metrics: <strong>Temperature</strong> and <strong>Luminosity</strong>.</p>
+            
+            <h3>Temperature and Color</h3>
+            <p>A star's color is its most vital "thermometer":</p>
+            <ul>
+                <li><span class="highlight">Blue Stars:</span> The "hot rods" of the universe (Surface temps > 30,000°C).</li>
+                <li><span class="highlight">Yellow Stars:</span> Medium-hot stars, like our Sun.</li>
+                <li><span class="highlight">Red Stars:</span> The coolest stars, burning around 3,000°C.</li>
+            </ul>
+
+            <h3>Deciphering the Spectrum</h3>
+            <p>Since we cannot physically visit stars, we use a <strong>Spectrograph</strong>. This instrument breaks starlight into a rainbow-like spectrum. The dark absorption lines act as a chemical ID card, telling us exactly which elements—such as oxygen, carbon, or nitrogen—are present in the star's atmosphere.</p>
+            
+            <h3>The Scale of the Void</h3>
+            <p>Distances in space are too vast for standard units. We use <strong>Light-Years</strong>—the distance light travels in one year (approximately 9.5 trillion kilometers). When we look at stars, we are literally looking back in time.</p>
+            </div>
+        </section>
+
+        <section id="galaxies">
+            <div class="card">
+            <h2>Galaxies & Quasars</h2>
+            <p>A galaxy is a massive collection of gas, dust, and billions of stars. Scientists classify these "islands" based on their physical shapes.</p>
+            
+            <ul>
+                <li><strong>Spiral Galaxies:</strong> Feature a central bulge of old stars surrounded by rotating "arms" of gas and young stars. (Example: Our Milky Way).</li>
+                <li><strong>Elliptical Galaxies:</strong> Massive, spherical or oval-shaped systems containing mostly older stars and very little gas for new star formation.</li>
+                <li><strong>Irregular Galaxies:</strong> Galaxies with no definite shape, often formed by the gravitational pull of larger neighboring galaxies.</li>
+            </ul>
+
+            <h3>Distant Mysteries: Quasars</h3>
+            <p>Among the most distant objects in the universe are Quasars. These are starlike sources of light that are among the strongest energy sources in the cosmos. Scientists believe they may be powered by massive black holes in the centers of young galaxies.</p>
+            </div>
+        </section>
+
+        <section id="lifecycle">
+            <div class="card card-large">
+            <h2>Star Life Cycle (Interactive)</h2>
+            <p>Interactive module demonstrating stages of stellar evolution — embedded from the lifecycle demo.</p>
+            <iframe class="embed-iframe" src="index.html" title="Star Lifecycle Module"></iframe>
+            </div>
+        </section>
+
+        <section id="cosmology">
+            <div class="card">
+            <h2>Formation of the Universe</h2>
+            
+            <h3>The Big Bang Theory</h3>
+            <p>Cosmology is the study of the origin and future of the universe. Most galaxies are moving away from each other, indicating that the universe is expanding. This observation leads to the Big Bang Theory: the idea that the universe began 14 billion years ago from a single, infinitely dense point.</p>
+
+            <h3>Structure of the Cosmos</h3>
+            <p>The universe is organized into a hierarchy:</p>
+            <p style="text-align:center; font-weight:bold; font-size:1.2em;">
+                Planets &rarr; Planetary Systems &rarr; Galaxies &rarr; Galaxy Clusters
+            </p>
+
+            <h3>The Future: The Big Freeze?</h3>
+            <p>Some scientists believe the universe will continue to expand forever. As stars age and die, the universe will eventually become cold and dark, a state sometimes referred to as the "Big Freeze."</p>
+            </div>
+        </section>
+
+    </div>
+
+    <footer>
+        <p>Project: Stars, Galaxies, the Universe</p>
+        <p><em>"The stars are the landmarks of the universe." - Sir John Herschel</em></p>
+    </footer>
+
+</body>
+</html>
