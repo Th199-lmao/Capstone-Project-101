@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stars, Galaxies, the Universe</title>
+    <style>
+        /* --- COSMIC THEME CSS --- */
+        :root {
+            --bg-color: #0b0d17;
+            --text-color: #e0e6ed;
+            --accent-color: #3e64ff;
+            --card-bg: #1c1f2e;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            line-height: 1.6;
+        }
+
+        /* Navigation: vertical right-side bar (desktop) */
+        nav {
+            position: fixed;
+            right: 24px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background: rgba(11, 13, 23, 0.6);
+            padding: 10px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.04);
+            z-index: 1000;
+            transition: opacity 0.28s ease, transform 0.28s ease;
+            box-shadow: 0 14px 40px rgba(0,0,0,0.45);
+            align-items: stretch;
+            min-width: 64px;
+        }
+
+        /* hide the page-nav while the title/home section is visible */
+        body.at-home nav { opacity: 0; transform: translateX(12px); pointer-events: none; }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            display: block;
+            padding: 8px 12px;
+            font-weight: 600;
+            text-transform: none;
+            font-size: 0.95rem;
+            border-radius: 8px;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        nav a:hover, nav a.active {
+            color: var(--accent-color);
+            background: rgba(255,255,255,0.03);
+            transform: translateX(-4px);
+        }
+
+        /* Responsive: on narrow screens keep nav at top, full width */
+        @media (max-width: 900px) {
+            nav {
+                position: sticky;
+                top: 0;
+                right: auto;
+                transform: none;
+                flex-direction: row;
+                justify-content: center;
+                gap: 12px;
+                width: 100%;
+                border-radius: 0;
+                padding: 10px 8px;
+            }
+            nav a { padding: 8px 10px; }
+        }
+
+        /* Hero Section */
+        header {
+            position: relative;
+            overflow: hidden;
+            background: radial-gradient(circle at center, rgba(27,39,53,0.9) 0%, rgba(9,10,15,0.95) 100%), url('https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?auto=format&fit=crop&w=1600&q=80') center/cover no-repeat;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 20px;
+            text-align: center;
+            color: #fff;
+        }
+
+        /* lower black cover behind the title (replaces earth image) */
+        header::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 45%;
+            background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.95) 100%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* ensure header content sits above the dark cover */
+        header > * { position: relative; z-index: 3; }
+
+        h1 {
+            font-size: 3.5rem;
+            margin-bottom: 10px;
+            color: #fff;
+            text-shadow: 0 0 10px var(--accent-color);
+        }
+
+        .quote {
+            font-style: italic;
+            color: #aab;
+            max-width: 800px;
+            margin: 20px auto;
+            border-left: 3px solid var(--accent-color);
+            padding-left: 15px;
+        }
+
+        /* primary call-to-action on the title page */
+        .cta-get-started {
+            display: inline-block;
+            margin-top: 22px;
+            background: linear-gradient(90deg, #5b7bff, #3ea0ff);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 999px;
+            font-weight: 700;
+            text-decoration: none;
+            box-shadow: 0 8px 30px rgba(62,100,255,0.18);
+            transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
+        }
+        .cta-get-started:hover { transform: translateY(-3px); box-shadow: 0 14px 46px rgba(62,100,255,0.22); }
+
+        /* Main Layout */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        /* Enable full-page sections with scroll snapping */
+        html, body { height: 100%; }
+        body {
+            scroll-snap-type: y mandatory;
+            scroll-behavior: smooth;
+        }
+
+        /* each section is a viewport-sized snap area; the visual card inside
+           remains its normal size and is centered vertically */
+        section {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 12px;
+            scroll-snap-align: start;
+            box-sizing: border-box;
+            background: transparent;
+        }
+
+        /* normal boxes sized to their content (centered within each section) */
+        .card {
+            width: 100%;
+            max-width: 1000px;
+            background: var(--card-bg);
+            padding: 22px 24px;
+            max-height: 520px;
+            overflow-y: auto;
+            transition: box-shadow 0.25s ease, transform 0.22s ease;
+        }
+
+        .card:hover { box-shadow: 0 10px 30px rgba(0,0,0,0.45); }
+
+        /* ---------- #intro artistic layered design (only affects #intro) ---------- */
+        #intro { 
+            position: relative;
+            background-image: url('https://raw.githubusercontent.com/Th199-lmao/Capstone-Project-101/main/galaxy-wallpaper-warm-colors.jpg');
+            background-size: cover;
+            background-position: center;
+            min-height: 100vh;
+            padding: 60px 20px;
+            display: block;
+            overflow: hidden;
+        }
+
+        /* subtle dark overlay above the image but beneath the card */
+        #intro::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(11,13,23,0.45) 0%, rgba(11,13,23,0.65) 55%, rgba(11,13,23,0.85) 100%);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* overlapping text box placed absolutely so it sits above the image (moved to left)
+           lowered slightly, shorter height, wider width per request */
+        #intro .card {
+            position: absolute;
+            left: 4%;
+            right: auto;
+            top: 60%;
+            transform: translateY(-30%);
+            width: 80%;
+            max-width: 1500px;
+            z-index: 3;
+            background: var(--card-bg); /* keep required card color */
+            color: var(--text-color);
+            box-shadow: 0 28px 64px rgba(2,6,23,0.85), 0 10px 22px rgba(0,0,0,0.5);
+            border-radius: 12px;
+            padding: 18px 22px;
+            max-height: 520px;
+            overflow-y: auto;
+        }
+
+        #intro .card h2, #intro .card p { color: var(--text-color); }
+
+        /* responsive fallback: on small screens the card returns to normal flow */
+        @media (max-width: 900px) {
+            #intro { min-height: auto; padding: 36px 16px; }
+            #intro .card { position: static; transform: none; width: 100%; max-width: 1000px; margin: 0 auto; box-shadow: 0 10px 30px rgba(0,0,0,0.45); }
+        }
+
+        .card.card-large {
+            max-width: none; /* legacy rule kept but not used for lifecycle when removed */
+            width: calc(100% - 140px);
+            padding: 28px;
+            margin: 0 auto;
+        }
+
+        /* Bento grid for #stars section */
+        #stars .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(260px, 1fr));
+            grid-template-rows: auto 1fr; /* top row sizes to content, bottom row stretches equally */
+            gap: 40px 72px; /* row-gap 40px, larger column-gap for more horizontal separation */
+            align-items: start;
+            width: 100%;
+            padding: 6px 0;
+        }
+        /* let each grid child use full cell width (cards inside grid) and make them visually separated */
+        #stars .card { width: 100%; max-width: none; background: linear-gradient(180deg, rgba(28,31,46,0.98), rgba(22,24,34,0.99)); border: 1px solid rgba(255,255,255,0.04); border-radius: 14px; box-shadow: 0 18px 60px rgba(2,6,23,0.72); overflow: hidden; transition: transform 0.22s ease, box-shadow 0.22s ease; }
+        #stars .card:hover { transform: translateY(-6px); box-shadow: 0 30px 90px rgba(2,6,23,0.8); }
+
+        #stars .bento-top {
+            grid-column: 1 / -1;
+            padding: 12px 16px; /* tighter vertical spacing so box matches text height */
+            color: var(--text-color);
+            margin-bottom: 6px; /* small breathing room before the row below */
+        }
+        #stars .bento-top h2 { margin-bottom: 8px; }
+        #stars .bento-item {
+            display: flex;
+            flex-direction: column;
+            padding: 18px;
+            color: var(--text-color);
+            justify-content: flex-start;
+            min-height: 0; /* allow grid to control height */
+            align-self: stretch; /* stretch to fill bottom row height */
+        }
+        /* ensure each bottom card fills its grid cell fully */
+        #stars .card.bento-item { height: 100%; }
+        /* prevent visual overlap: ensure each card is positioned and stacked cleanly */
+        #stars .card { position: relative; z-index: 1; }
+        #stars .card:hover { z-index: 10; }
+        #stars .bento-item h3 { margin-top: 0; color: var(--accent-color); }
+
+        @media (max-width: 900px) {
+            #stars .bento-grid { grid-template-columns: 1fr; gap: 18px; }
+            #stars .card { border-radius: 12px; }
+        }
+
+        /* Temperature card: button and embedded color-scale image */
+        .show-scale {
+            display: inline-block;
+            margin-top: 12px;
+            background: linear-gradient(90deg,#4f6bff,#38b0ff);
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 999px;
+            border: none;
+            cursor: pointer;
+            font-weight: 700;
+        }
+        .scale-image { margin-top: 12px; }
+        .scale-image img { width: 100%; height: auto; display: block; border-radius: 10px; box-shadow: 0 12px 36px rgba(0,0,0,0.5); }
+        .img-link { display: block; }
+        .img-note { font-size: 0.85rem; color: rgba(224,230,237,0.85); text-align: center; margin-top: 8px; font-style: italic; }
+        .spectrum-image { margin-top: 12px; }
+        .spectrum-image img { width: 100%; height: auto; display: block; border-radius: 10px; box-shadow: 0 12px 36px rgba(0,0,0,0.45); }
+        .void-image { margin-top: 12px; }
+        .void-image img { width: 100%; height: auto; display: block; border-radius: 10px; box-shadow: 0 12px 36px rgba(0,0,0,0.45); }
+        .panel-image { margin-top: 12px; }
+        .panel-image img { width: 100%; height: auto; display: block; border-radius: 8px; box-shadow: 0 12px 36px rgba(0,0,0,0.45); }
+        /* Oversize cosmology image: scale up, center, and crop inside the panel */
+        #cosmoPanel .panel-image { overflow: hidden; position: relative; height: 100%; display: flex; align-items: center; justify-content: center; padding: 12px; }
+        /* Fit the entire diagram inside the panel so it's fully visible */
+        #cosmoPanel .panel-image img { width: auto; max-width: 92%; height: auto; max-height: 92%; object-fit: contain; transform: none; border-radius: 6px; box-shadow: 0 10px 28px rgba(0,0,0,0.45); }
+        /* Galaxy slide-in plain box */
+        #galaxies .card { position: relative; overflow: hidden; }
+        /* Cosmology slide-in plain box (matches galaxies) */
+        #cosmology .card { position: relative; overflow: hidden; }
+        #galaxies .slide-toggle {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.02);
+            color: var(--accent-color);
+            border: 1px solid rgba(255,255,255,0.04);
+            width: 44px;
+            height: 44px;
+            display: grid;
+            place-items: center;
+            font-size: 1.2rem;
+            padding: 0;
+            cursor: pointer;
+            z-index: 30;
+            border-radius: 999px;
+            box-shadow: 0 8px 22px rgba(0,0,0,0.45);
+        }
+        #cosmology .slide-toggle {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.02);
+            color: var(--accent-color);
+            border: 1px solid rgba(255,255,255,0.04);
+            width: 44px;
+            height: 44px;
+            display: grid;
+            place-items: center;
+            font-size: 1.2rem;
+            padding: 0;
+            cursor: pointer;
+            z-index: 30;
+            border-radius: 999px;
+            box-shadow: 0 8px 22px rgba(0,0,0,0.45);
+        }
+        #galaxies .slide-panel {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(12,14,20,0.99);
+            border-radius: 0;
+            padding: 22px;
+            box-shadow: 0 20px 60px rgba(2,6,23,0.7);
+            transform: translateX(110%);
+            transition: transform 420ms cubic-bezier(.2,.9,.2,1);
+            z-index: 20;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+        #cosmology .slide-panel {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(12,14,20,0.99);
+            border-radius: 0;
+            padding: 22px;
+            box-shadow: 0 20px 60px rgba(2,6,23,0.7);
+            transform: translateX(110%);
+            transition: transform 420ms cubic-bezier(.2,.9,.2,1);
+            z-index: 20;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+        #galaxies .slide-panel.open { transform: translateX(0); border-radius: 10px; }
+        #galaxies .slide-panel h4 { margin: 0 0 8px 0; color: var(--accent-color); }
+        #galaxies .slide-panel p { margin: 0; color: var(--text-color); }
+        #cosmology .slide-panel.open { transform: translateX(0); border-radius: 10px; }
+        #cosmology .slide-panel h4 { margin: 0 0 8px 0; color: var(--accent-color); }
+        #cosmology .slide-panel p { margin: 0; color: var(--text-color); }
+        @media (max-width: 900px) {
+            #galaxies .slide-panel { width: 100%; top: 0; right: 0; height: 100%; border-radius: 0; }
+            #galaxies .slide-toggle { right: 16px; }
+            #cosmology .slide-panel { width: 100%; top: 0; right: 0; height: 100%; border-radius: 0; }
+            #cosmology .slide-toggle { right: 16px; }
+        }
+
+        /* when the panel is open replace the original content */
+        #galaxies.card.panel-open .card-content { display: none; }
+        #cosmology.card.panel-open .card-content { display: none; }
+
+        h2 {
+            color: var(--accent-color);
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+        }
+
+        h3 {
+            color: #fff;
+            margin-top: 25px;
+        }
+
+        /* Lists & Specific formatting */
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        
+        li {
+            background: rgba(255,255,255,0.05);
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .highlight {
+            color: #ffdd57;
+            font-weight: bold;
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px;
+            font-size: 0.8rem;
+            color: #666;
+            border-top: 1px solid #333;
+        }
+        /* iframe embed styling for lifecycle module */
+        .embed-iframe { width: 100%; height: calc(100vh - 220px); max-height: none; border: none; border-radius: 10px; box-shadow: 0 12px 50px rgba(0,0,0,0.5); }
+
+        /* Full-size lifecycle simulation (no surrounding card) */
+        #lifecycle { padding: 0; display: flex; align-items: center; justify-content: center; background: transparent; }
+        .embed-iframe.full-sim {
+            width: calc(100% - 140px); /* respect nav safe area */
+            height: calc(100vh - 80px);
+            max-width: none;
+            border-radius: 8px;
+            box-shadow: 0 30px 100px rgba(0,0,0,0.65);
+            margin: 0 auto;
+            display: block;
+        }
+        @media (max-width: 1200px) {
+            .embed-iframe.full-sim { width: calc(100% - 40px); height: calc(100vh - 120px); }
+        }
+        @media (max-width: 900px) {
+            #lifecycle { padding: 20px; }
+            .embed-iframe.full-sim { width: 100%; height: 72vh; border-radius: 6px; }
+        }
+
+        @media (max-width: 1200px) {
+            .embed-iframe { height: 85vh; max-height: 1200px; }
+        }
+
+        @media (max-width: 900px) {
+            .embed-iframe { height: 72vh; max-height: 900px; }
+        }
+
+        /* Comet pass overlay (bring to front of content) */
+        .comet-layer { position: fixed; inset: 0; pointer-events: none; z-index: 500; overflow: visible; }
+
+        /* Background star canvas - draw randomized, non-grid stars behind content */
+        .star-canvas {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 2; /* behind main content (main content uses z-index:10) */
+            opacity: 0.9;
+            mix-blend-mode: screen;
+            will-change: transform;
+        }
+        .comet {
+            position: absolute;
+            width: 360px;
+            height: 4px;
+            background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.95) 40%, rgba(255,255,255,0) 100%);
+            filter: blur(6px) contrast(120%);
+            transform: rotate(-18deg) translateX(-120%);
+            will-change: transform, opacity;
+            mix-blend-mode: screen;
+            opacity: 0.0;
+        }
+        .comet::after {
+            content: '';
+            position: absolute;
+            right: -8px;
+            top: -6px;
+            width: 18px;
+            height: 18px;
+            background: radial-gradient(circle, #fff 0%, rgba(255,255,255,0.5) 40%, rgba(255,255,255,0) 70%);
+            filter: blur(1px);
+            border-radius: 50%;
+        }
+
+        @keyframes comet-pass {
+            0% { transform: rotate(-18deg) translateX(-140%); opacity: 0; }
+            6% { opacity: 1; }
+            50% { transform: rotate(-18deg) translateX(60%); opacity: 1; }
+            100% { transform: rotate(-18deg) translateX(160%); opacity: 0; }
+        }
+
+        .comet.c1 { top: 12vh; left: -10%; width: 420px; animation: comet-pass 3.6s ease-in-out 0.4s infinite; }
+        .comet.c2 { top: 38vh; left: -18%; width: 520px; animation: comet-pass 5.2s cubic-bezier(.2,.8,.2,1) 2s infinite; filter: blur(8px) saturate(120%); }
+        .comet.c3 { top: 66vh; left: -5%; width: 360px; animation: comet-pass 4.2s linear 1.6s infinite; filter: blur(4px); }
+
+        /* subtle glow on headings to react to comets */
+        header h1, h2 { transition: text-shadow 0.4s ease; }
+
+        /* ensure content stacks above the comet background */
+        header, .container, footer { position: relative; z-index: 10; }
+        .comet-glow { text-shadow: 0 0 18px rgba(255,220,200,0.12), 0 0 36px rgba(62,100,255,0.06); }
+        /* model thumbnail removed (no image on right of title) */
+
+        .model-modal { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; z-index: 2000; background: linear-gradient(180deg, rgba(2,4,8,0.6), rgba(2,4,8,0.85)); }
+        .model-modal.open { display: flex; }
+        .model-modal-inner { width: min(1100px, 92vw); height: min(740px, 86vh); background: rgba(8,10,18,0.95); border-radius: 12px; box-shadow: 0 30px 80px rgba(0,0,0,0.7); position: relative; padding: 18px; }
+        model-viewer { width: 100%; height: 100%; border-radius: 8px; background: transparent; }
+        .model-close { position: absolute; right: 12px; top: 10px; color: #fff; background: transparent; border: none; font-size: 28px; cursor: pointer; }
+        /* Ensure the fixed right-side nav never overlaps page content on wide screens */
+        @media (min-width: 900px) {
+            .container, section { padding-right: 140px; }
+        }
+    </style>
+    <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+<body>
+
+    <!-- subtle star dots background (behind content, not above boxes/text/images) -->
+    <canvas id="starCanvas" class="star-canvas" aria-hidden="true"></canvas>
+
+    <div class="comet-layer" aria-hidden="true">
+        <span class="comet c1"></span>
+        <span class="comet c2"></span>
+        <span class="comet c3"></span>
+    </div>
+
+    <nav>
+        <a href="#home">Home</a>
+        <a href="#intro">Introduction</a>
+        <a href="#stars">Stars</a>
+        <a href="#lifecycle">Life Cycle</a>
+        <a href="#galaxies">Galaxies</a>
+        <a href="#cosmology">Cosmology</a>
+    </nav>
+
+    <header id="home">
+        <h1>Stars, Galaxies, the Universe</h1>
+        <p>A Journey Through Time and Space</p>
+        
+
+    <!-- color-scale image now always visible; toggle script removed -->
+
+    <!-- 3D model modal -->
+    <div id="modelModal" class="model-modal" role="dialog" aria-hidden="true">
+        <div class="model-modal-inner">
+            <button class="model-close" aria-label="Close model">&times;</button>
+            <model-viewer id="mv" src="https://modelviewer.dev/shared-assets/models/Astronaut.glb" alt="3D astronaut" ar ios-src="" auto-rotate camera-controls exposure="1"></model-viewer>
+        </div>
+    </div>
+
+    <script>
+        (function(){
+            const thumb = document.getElementById('modelThumb');
+            const modal = document.getElementById('modelModal');
+            const closeBtn = document.querySelector('.model-close');
+            if(!thumb || !modal) return;
+            thumb.addEventListener('click', ()=>{ modal.classList.add('open'); modal.setAttribute('aria-hidden','false'); document.body.style.overflow = 'hidden'; });
+            closeBtn.addEventListener('click', ()=>{ modal.classList.remove('open'); modal.setAttribute('aria-hidden','true'); document.body.style.overflow = ''; });
+            modal.addEventListener('click', (e)=>{ if(e.target === modal) { modal.classList.remove('open'); modal.setAttribute('aria-hidden','true'); document.body.style.overflow = ''; } });
+        })();
+    </script>
+    <script>
+        (function(){
+            const header = document.getElementById('home');
+            if(!header) return;
+            const updateNavVisibility = ()=>{
+                const rect = header.getBoundingClientRect();
+                // when the header occupies the majority of viewport, treat as 'at-home'
+                const atHome = rect.bottom > (window.innerHeight * 0.6);
+                document.body.classList.toggle('at-home', atHome);
+            };
+            window.addEventListener('load', updateNavVisibility);
+            window.addEventListener('scroll', updateNavVisibility, {passive:true});
+            window.addEventListener('resize', updateNavVisibility);
+            updateNavVisibility();
+            const link = document.querySelector('.cta-get-started');
+            if(link){
+                link.addEventListener('click', ()=>{ setTimeout(updateNavVisibility, 700); });
+            }
+        })();
+    </script>
+        <div class="quote">
+            "The cosmos is within us. We are made of star-stuff. We are a way for the cosmos to know itself." <br>
+            <strong>- Carl Sagan</strong>
+        </div>
+        <a href="#intro" class="cta-get-started" aria-label="Get started - go to Introduction">Get Started</a>
+        
+    </header>
+
+    <div class="container">
+
+        <section id="intro">
+            <div class="card">
+            <h2>Introduction</h2>
+            <p>Welcome to an interactive exploration of the universe. This project is a comprehensive study of cosmic evolution, tracing the history of matter from the microscopic nuclear reactions deep within a star’s core to the unfathomable expansion of the entire fabric of space-time.</p>
+
+            <p>The universe is not a static vacuum. it is a dynamic, evolving system. By decoding the light of distant stars, mapping the rotation of massive galaxies, and measuring the echoes of the Big Bang, scientists have reconstructed a narrative that began roughly 14 billion years ago. On this site, you will step into the shoes of a modern cosmologist to discover how we study objects trillions of miles away and what the ultimate fate of our "Island Universe" might be.</p>
+            </div>
+        </section>
+
+        <section id="stars">
+            <div class="bento-grid">
+                <div class="card bento-top">
+                    <h2>The Science of Stellar Classification</h2>
+                    <p>Stars are massive, luminous balls of plasma, primarily composed of Hydrogen and Helium. Astronomers classify them using two primary metrics: Temperature and Luminosity.</p>
+                </div>
+
+                <div class="card bento-item">
+                    <h3>Temperature and Color</h3>
+                    <p>Temperature and Color: A star’s color is its most vital "thermometer." Blue stars are the "hot rods" of the universe, with surface temperatures exceeding 30,000°C. Yellow stars, like our Sun, are medium-hot, while Red stars are the coolest, often burning at temperatures around 3,000°C.</p>
+                    <div id="starScale" class="scale-image">
+                        <a class="img-link" href="https://raw.githubusercontent.com/Th199-lmao/Capstone-Project-101/main/The-Colors-of-Stars-From-Hottest-to-Coldest.png" target="_blank" rel="noopener">
+                            <img src="https://raw.githubusercontent.com/Th199-lmao/Capstone-Project-101/main/The-Colors-of-Stars-From-Hottest-to-Coldest.png" alt="The Colors of Stars from Hottest to Coldest">
+                        </a>
+                        <div class="img-note">Press image for full view</div>
+                    </div>
+                </div>
+
+                <div class="card bento-item">
+                    <h3>Deciphering the Spectrum</h3>
+                    <p>Deciphering the Spectrum: Since we cannot physically visit stars, we use a Spectrograph. This instrument breaks starlight into a rainbow-like spectrum. The dark absorption lines act as a chemical ID card, telling us exactly which elements—such as oxygen, carbon, or nitrogen—are present in the star's atmosphere.</p>
+                    <div class="spectrum-image">
+                        <a class="img-link" href="https://raw.githubusercontent.com/Th199-lmao/Capstone-Project-101/main/Astronomical%20spectroscopy%20-%20Alchetron%2C%20the%20free%20social%20encyclopedia.jpeg" target="_blank" rel="noopener">
+                            <img src="https://raw.githubusercontent.com/Th199-lmao/Capstone-Project-101/main/Astronomical%20spectroscopy%20-%20Alchetron%2C%20the%20free%20social%20encyclopedia.jpeg" alt="Astronomical spectroscopy">
+                        </a>
+                        <div class="img-note">Press image for full view</div>
+                    </div>
+                </div>
+
+                <div class="card bento-item">
+                    <h3>The Scale of the Void</h3>
+                    <p>The Scale of the Void: Distances in space are too vast for standard units. We use Light-Years—the distance light travels in one year (approximately 9.5 trillion kilometers). When we look at stars, we are literally looking back in time.</p>
+                    <div class="void-image">
+                        <a class="img-link" href="https://raw.githubusercontent.com/Th199-lmao/Capstone-Project-101/main/light-year2.en.jpg" target="_blank" rel="noopener">
+                            <img src="https://raw.githubusercontent.com/Th199-lmao/Capstone-Project-101/main/light-year2.en.jpg" alt="Light-year illustration">
+                        </a>
+                        <div class="img-note">Press image for full view</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="lifecycle">
+            <iframe class="embed-iframe full-sim" src="index.html" title="Star Lifecycle Module"></iframe>
+        </section>
+
+        <section id="galaxies">
+            <div class="card">
+            <div class="card-content">
+            <h2>Galaxies & Quasars</h2>
+            <p>A galaxy is a massive collection of gas, dust, and billions of stars. Scientists classify these "islands" based on their physical shapes.</p>
+            
+            <ul>
+                <li><strong>Spiral Galaxies:</strong> Feature a central bulge of old stars surrounded by rotating "arms" of gas and young stars. (Example: Our Milky Way).</li>
+                <li><strong>Elliptical Galaxies:</strong> Massive, spherical or oval-shaped systems containing mostly older stars and very little gas for new star formation.</li>
+                <li><strong>Irregular Galaxies:</strong> Galaxies with no definite shape, often formed by the gravitational pull of larger neighboring galaxies.</li>
+            </ul>
+
+            <h3>Distant Mysteries: Quasars</h3>
+            <p>Among the most distant objects in the universe are Quasars. These are starlike sources of light that are among the strongest energy sources in the cosmos. Scientists believe they may be powered by massive black holes in the centers of young galaxies.</p>
+            </div>
+
+            <button class="slide-toggle" aria-expanded="false" aria-controls="galaxyPanel">➤</button>
+            <div id="galaxyPanel" class="slide-panel" aria-hidden="true">
+                <div class="panel-image">
+                    <img src="https://raw.githubusercontent.com/Th199-lmao/Capstone-Project-101/main/Mod2Graphic2.jpg" alt="Module graphic">
+                </div>
+            </div>
+            </div>
+        </section>
+
+        <section id="cosmology">
+            <div class="card panel-open">
+
+            <div id="cosmoPanel" class="slide-panel open" aria-hidden="false">
+                <div class="panel-image">
+                    <img src="https://raw.githubusercontent.com/Th199-lmao/Capstone-Project-101/main/Big-Bang-Diagram-scaled.jpg" alt="Big Bang diagram">
+                </div>
+            </div>
+
+            <button class="slide-toggle" aria-expanded="true" aria-controls="cosmoPanel">➤</button>
+
+            <div class="card-content">
+            <h2>Formation of the Universe</h2>
+            
+            <h3>The Big Bang Theory</h3>
+            <p>Cosmology is the study of the origin and future of the universe. Most galaxies are moving away from each other, indicating that the universe is expanding. This observation leads to the Big Bang Theory: the idea that the universe began 14 billion years ago from a single, infinitely dense point.</p>
+
+            <h3>Structure of the Cosmos</h3>
+            <p>The universe is organized into a hierarchy:</p>
+            <p style="text-align:center; font-weight:bold; font-size:1.2em;">
+                Planets &rarr; Planetary Systems &rarr; Galaxies &rarr; Galaxy Clusters
+            </p>
+
+            <h3>The Future: The Big Freeze?</h3>
+            <p>Some scientists believe the universe will continue to expand forever. As stars age and die, the universe will eventually become cold and dark, a state sometimes referred to as the "Big Freeze."</p>
+            </div>
+
+            </div>
+        </section>
+
+    </div>
+
+    <footer>
+        <p>Project: Stars, Galaxies, the Universe</p>
+    <!-- color-scale image now always visible; toggle script removed -->
+    </footer>
+    <script>
+        // Galaxy slide-panel toggle handler (replaces card content)
+        (function(){
+            const card = document.querySelector('#galaxies .card');
+            const toggle = card && card.querySelector('.slide-toggle');
+            const panel = document.getElementById('galaxyPanel');
+            const content = card && card.querySelector('.card-content');
+            if(!toggle || !panel || !content) return;
+            toggle.addEventListener('click', ()=>{
+                const open = panel.classList.toggle('open');
+                card.classList.toggle('panel-open', open);
+                panel.setAttribute('aria-hidden', open? 'false' : 'true');
+                toggle.setAttribute('aria-expanded', open? 'true' : 'false');
+            });
+        })();
+    </script>
+
+    <script>
+        // Cosmology slide-panel toggle handler (mirrors galaxies)
+        (function(){
+            const card = document.querySelector('#cosmology .card');
+            const toggle = card && card.querySelector('.slide-toggle');
+            const panel = document.getElementById('cosmoPanel');
+            const content = card && card.querySelector('.card-content');
+            if(!toggle || !panel || !content) return;
+            toggle.addEventListener('click', ()=>{
+                const open = panel.classList.toggle('open');
+                card.classList.toggle('panel-open', open);
+                panel.setAttribute('aria-hidden', open? 'false' : 'true');
+                toggle.setAttribute('aria-expanded', open? 'true' : 'false');
+            });
+        })();
+    </script>
+
+    <script>
+        // Draw randomized background stars onto the canvas so they are not grid-aligned
+        (function(){
+            const canvas = document.getElementById('starCanvas');
+            if(!canvas) return;
+            const ctx = canvas.getContext('2d');
+            let DPR = Math.max(1, window.devicePixelRatio || 1);
+            const STAR_COUNT = 220; // adjust density
+            let stars = [];
+
+            function resize(){
+                DPR = Math.max(1, window.devicePixelRatio || 1);
+                canvas.width = Math.floor(window.innerWidth * DPR);
+                canvas.height = Math.floor(window.innerHeight * DPR);
+                canvas.style.width = window.innerWidth + 'px';
+                canvas.style.height = window.innerHeight + 'px';
+                ctx.setTransform(DPR,0,0,DPR,0,0);
+                generateStars();
+                render();
+            }
+
+            function rand(min, max){ return Math.random() * (max - min) + min; }
+
+            function generateStars(){
+                stars = [];
+                for(let i=0;i<STAR_COUNT;i++){
+                    stars.push({
+                        x: Math.random() * canvas.width / DPR,
+                        y: Math.random() * canvas.height / DPR,
+                        r: rand(0.4, 1.6),
+                        a: rand(0.35, 1),
+                        tw: rand(0.002, 0.01),
+                        phase: Math.random() * Math.PI * 2
+                    });
+                }
+            }
+
+            function render(time){
+                ctx.clearRect(0,0,canvas.width, canvas.height);
+                for(const s of stars){
+                    const alpha = s.a * (0.6 + 0.4 * Math.sin((time||0) * s.tw + s.phase));
+                    ctx.beginPath();
+                    const g = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, s.r*6);
+                    g.addColorStop(0, `rgba(255,255,255,${alpha})`);
+                    g.addColorStop(0.6, `rgba(255,255,255,${alpha*0.25})`);
+                    g.addColorStop(1, 'rgba(255,255,255,0)');
+                    ctx.fillStyle = g;
+                    ctx.fillRect(s.x - s.r*6, s.y - s.r*6, s.r*12, s.r*12);
+                }
+                requestAnimationFrame(render);
+            }
+
+            window.addEventListener('resize', resize, {passive:true});
+            resize();
+        })();
+    </script>
+
+</body>
+</html>
